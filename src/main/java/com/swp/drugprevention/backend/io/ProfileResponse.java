@@ -35,6 +35,5 @@ public class ProfileResponse {
     @Pattern(regexp = "\\d{10}|\\d{11}", message = "Invalid phone number format. Must be 10 or 11 digits.")
     private String phone;
 
-    private Boolean isAccountVerified;
 }
 

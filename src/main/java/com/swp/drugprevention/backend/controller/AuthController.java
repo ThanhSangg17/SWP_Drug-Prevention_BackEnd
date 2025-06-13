@@ -2,6 +2,7 @@ package com.swp.drugprevention.backend.controller;
 
 import com.swp.drugprevention.backend.io.AuthRequest;
 import com.swp.drugprevention.backend.io.AuthResponse;
+import com.swp.drugprevention.backend.io.OtpRequest;
 import com.swp.drugprevention.backend.io.ResetPasswordRequest;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.service.AppUserDetailsService;
@@ -97,27 +98,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/send-otp")
-    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email) {
-        try {
-            profileService.sendOtp(email);
-        }catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
     @PostMapping("/verify-otp")
-    public void verifyEmail(@RequestBody Map<String, Object> request,
-                            @CurrentSecurityContext(expression = "authentication?.name") String email) {
-        if (request.get("otp").toString() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing details");
-        }
-
-        try {
-            profileService.verifyOtp(email, request.get("otp").toString());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+    public ResponseEntity<String> verify(@RequestBody OtpRequest otpRequest) {
+        profileService.verifyOtp(otpRequest.getOtp());
+        return ResponseEntity.ok("Registration successful!");
     }
 
     @PostMapping("/logout")

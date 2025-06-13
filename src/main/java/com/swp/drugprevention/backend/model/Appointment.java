@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Appointment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AppointmentID")
     private Integer appointmentId;
 
@@ -28,7 +30,7 @@ public class Appointment {
     private Consultant consultant;
 
     @Column(name = "Date")
-    private java.sql.Date date;
+    private LocalDate date;
 
     @Column(name = "Time")
     private java.sql.Time time;

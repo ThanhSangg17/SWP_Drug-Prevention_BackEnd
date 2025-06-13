@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.service;
 
+import com.swp.drugprevention.backend.io.PendingRegistration;
 import com.swp.drugprevention.backend.io.ProfileRequest;
 import com.swp.drugprevention.backend.io.ProfileResponse;
 import com.swp.drugprevention.backend.model.User;
@@ -12,17 +13,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
+    private final Map<String, PendingRegistration> pendingRegistrations = new ConcurrentHashMap<>();
+
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
+
+
 
     @Override
     public ProfileResponse createProfile(ProfileRequest request) {
@@ -98,7 +106,110 @@ public class ProfileServiceImpl implements ProfileService {
         userRepository.save(existingUser);
     }
 
+
     @Override
+    public void sendOtp(ProfileRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already exists.");
+        }
+
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        long expiryTime = System.currentTimeMillis() + 5 * 60 * 1000; // 5 phút
+
+        PendingRegistration pending = new PendingRegistration();
+        pending.setProfileRequest(request);
+        pending.setOtp(otp);
+        pending.setExpiryTime(expiryTime);
+
+        pendingRegistrations.put(request.getEmail(), pending);
+
+        try {
+            emailService.sendOtpEmail(request.getEmail(), otp);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to send email");
+        }
+    }
+
+    @Override
+    public void verifyOtp(String otp) {
+        // tìm OTP trùng trong pendingRegistrations
+        Optional<Map.Entry<String, PendingRegistration>> match = pendingRegistrations.entrySet().stream()
+                .filter(entry -> entry.getValue().getOtp().equals(otp))
+                .findFirst();
+
+        if (match.isEmpty()) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        PendingRegistration pending = match.get().getValue();
+
+        if (pending.getExpiryTime() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP expired");
+        }
+
+        // tạo account chính thức
+        ProfileRequest request = pending.getProfileRequest();
+        createProfile(request);
+
+        // xóa khỏi bộ nhớ tạm
+        pendingRegistrations.remove(request.getEmail());
+    }
+
+
+
+
+    private ProfileResponse convertToProfileResponse(User newProfile) {
+        return ProfileResponse.builder()
+                .fullName(newProfile.getFullName())
+                .email(newProfile.getEmail())
+                .yob(newProfile.getYob())
+                .gender(newProfile.getGender())
+                .phone(newProfile.getPhone())
+                .build();
+    }
+
+    private User convertToUserEntity(ProfileRequest request) {
+        return User.builder()
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .yob(request.getYob())
+                .gender(request.getGender())
+                .phone(request.getPhone())
+                .resetOtpExpireAt(0L)
+                .verifyOTP(null)
+                .verifyOtpExpireAt(0L)
+                .resetOtp(null)
+                .build();
+
+
+    }
+}
+
+//những hàm đã được sửa bên trên
+//không cần nữa bởi vì hàm này verify khi đã đăng nhập, điều này không cần thiết nên xóa đi
+    /*@Override
+    public void verifyOtp(String email, String otp) {
+        User existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
+        if (existingUser.getVerifyOTP() == null || !existingUser.getVerifyOTP().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (existingUser.getVerifyOtpExpireAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP Expired");
+        }
+
+        existingUser.setIsAccountVerified(true);
+        existingUser.setVerifyOTP(null);
+        existingUser.setVerifyOtpExpireAt(0L);
+
+        userRepository.save(existingUser);
+    }*/
+
+//cái này tương tự, vì cần phải đăng nhập mới có email để gửi mà email lấy từ database nên cũng xóa đi
+// vì khi đăng kí thì chưa có email dưới database
+    /*@Override
     public void sendOtp(String email) {
         User existingUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
@@ -124,53 +235,4 @@ public class ProfileServiceImpl implements ProfileService {
         }catch (Exception e) {
             throw new RuntimeException("Unable to send email");
         }
-    }
-
-    @Override
-    public void verifyOtp(String email, String otp) {
-        User existingUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
-        if (existingUser.getVerifyOTP() == null || !existingUser.getVerifyOTP().equals(otp)) {
-            throw new RuntimeException("Invalid OTP");
-        }
-
-        if (existingUser.getVerifyOtpExpireAt() < System.currentTimeMillis()) {
-            throw new RuntimeException("OTP Expired");
-        }
-
-        existingUser.setIsAccountVerified(true);
-        existingUser.setVerifyOTP(null);
-        existingUser.setVerifyOtpExpireAt(0L);
-
-        userRepository.save(existingUser);
-    }
-
-    private ProfileResponse convertToProfileResponse(User newProfile) {
-        return ProfileResponse.builder()
-                .fullName(newProfile.getFullName())
-                .email(newProfile.getEmail())
-                .yob(newProfile.getYob())
-                .gender(newProfile.getGender())
-                .phone(newProfile.getPhone())
-                .isAccountVerified(newProfile.getIsAccountVerified())
-                .build();
-    }
-
-    private User convertToUserEntity(ProfileRequest request) {
-        return User.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .yob(request.getYob())
-                .gender(request.getGender())
-                .phone(request.getPhone())
-                .isAccountVerified(false)
-                .resetOtpExpireAt(0L)
-                .verifyOTP(null)
-                .verifyOtpExpireAt(0L)
-                .resetOtp(null)
-                .build();
-
-
-    }
-}
+    }*/

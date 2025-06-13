@@ -32,8 +32,6 @@ public class User {
 
     private String verifyOTP;
 
-    private Boolean isAccountVerified;
-
     private Long verifyOtpExpireAt;
 
     private String resetOtp;
