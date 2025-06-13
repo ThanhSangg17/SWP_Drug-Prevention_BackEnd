@@ -1,8 +1,10 @@
 package com.swp.drugprevention.backend.controller;
 
+import com.swp.drugprevention.backend.exception.EmailAlreadyExistsException;
 import com.swp.drugprevention.backend.io.ProfileRequest;
 import com.swp.drugprevention.backend.io.ProfileResponse;
 import com.swp.drugprevention.backend.repository.ProfileService;
+import com.swp.drugprevention.backend.repository.UserRepository;
 import com.swp.drugprevention.backend.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +19,20 @@ public class ProfileController {
 
     private final ProfileService profileService;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ProfileResponse register(@Valid @RequestBody ProfileRequest request) {
-        ProfileResponse response = profileService.createProfile(request);
+    public ResponseEntity<String> register(@Valid @RequestBody ProfileRequest request) {
+        userRepository.findByEmail(request.getEmail())
+                .ifPresent(user -> { throw new EmailAlreadyExistsException("Email is exist: "+request.getEmail());
+                });
+        //nếu không tồn tại thì tạo mới
+        /*ProfileResponse response = profileService.createProfile(request);
         emailService.sendWelcomeEmail(response.getEmail(), response.getFullName());//dùng để gửi mail ngay sau khi đăng kí xong
-        return response;
+        return response;*/
+        profileService.sendOtp(request);
+        return ResponseEntity.ok("OTP sent to " + request.getEmail());
     }
 
     @GetMapping("/profile")

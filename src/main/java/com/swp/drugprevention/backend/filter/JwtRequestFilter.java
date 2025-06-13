@@ -26,9 +26,15 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtil jwtUtil;
 
-    private static final List<String> PUBLIC_URLS = List.of("/login","/register","/send-reset-otp","reset-password","/logout");
+    private static final List<String> PUBLIC_URLS = List.of(
+            "/login",
+            "/register",
+            "/send-reset-otp",
+            "/reset-password",
+            "/logout",
+            "/verify-otp" // Thêm dòng này
+    );
 
-//nơi logic chính của bộ lọc được thực thi
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
@@ -43,15 +49,15 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
 
         //1. check the authorization header
         final String authorizationHeader = request.getHeader("Authorization");
-        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            authorizationHeader.substring(7);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwt = authorizationHeader.substring(7); //  Gán đúng token
         }
 
         //2. If not found in header, check cookies
         if (jwt == null) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
-                for (Cookie cookie: cookies) {
+                for (Cookie cookie : cookies) {
                     if ("jwt".equals(cookie.getName())) {
                         jwt = cookie.getValue();
                         break;
@@ -61,9 +67,7 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
         }
 
         //3.validate the token and set security context
-
         if (jwt != null) {
-
             email = jwtUtil.extractEmail(jwt);
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = appUserDetailsService.loadUserByUsername(email);
@@ -76,7 +80,6 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
             }
         }
 
-        filterChain.doFilter(request, response); //lọc xong thì cho phép yêu cầu đến controller với quyền hạn đã xác thực
-
+        filterChain.doFilter(request, response);
     }
 }
