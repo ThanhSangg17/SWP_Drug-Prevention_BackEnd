@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint { //cài đặt ngoại lên sẽ được hiển thị ra
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint { //cài đặt ngoại lệ sẽ được hiển thị ra
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

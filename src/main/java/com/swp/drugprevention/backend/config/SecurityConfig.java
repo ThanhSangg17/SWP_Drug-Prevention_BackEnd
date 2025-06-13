@@ -38,7 +38,7 @@ public class SecurityConfig {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->auth
-                        .requestMatchers("/login", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp")
+                        .requestMatchers("/log", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp")
                         .permitAll().anyRequest().authenticated())
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//mỗi lần gửi request là phải có token ở header để xác thực, vì dùng STATELESS không cho lưu session
                 .logout(AbstractHttpConfigurer::disable) //vì đã không cho lưu session nên không có session để xóa nên tính năng logout mặc định của spring security ko cần thiết
