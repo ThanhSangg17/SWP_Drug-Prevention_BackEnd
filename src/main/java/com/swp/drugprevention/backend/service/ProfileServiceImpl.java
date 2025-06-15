@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.service;
 
+import com.swp.drugprevention.backend.enums.AuthenticationProvider;
 import com.swp.drugprevention.backend.io.PendingRegistration;
 import com.swp.drugprevention.backend.io.ProfileRequest;
 import com.swp.drugprevention.backend.io.ProfileResponse;
@@ -7,9 +8,12 @@ import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,6 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProfileServiceImpl implements ProfileService {
 
     private final Map<String, PendingRegistration> pendingRegistrations = new ConcurrentHashMap<>();
@@ -180,10 +185,30 @@ public class ProfileServiceImpl implements ProfileService {
                 .verifyOTP(null)
                 .verifyOtpExpireAt(0L)
                 .resetOtp(null)
+                .authProvider(AuthenticationProvider.LOCAL)
                 .build();
 
 
     }
+    public User loginRegisterByGoogleOAuth2(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+        OAuth2User oAuth2User = oAuth2AuthenticationToken.getPrincipal();
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+
+        log.info("USER Email from GOOGLE IS {}",email);
+        log.info("USER Name from GOOGLE IS {}",name);
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            user = new User();
+            user.setFullName(name);
+            user.setEmail(email);
+            user.setAuthProvider(AuthenticationProvider.GOOGLE);
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
 }
 
 //những hàm đã được sửa bên trên

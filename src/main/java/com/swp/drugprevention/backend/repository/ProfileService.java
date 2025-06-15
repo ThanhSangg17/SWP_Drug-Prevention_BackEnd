@@ -2,6 +2,8 @@ package com.swp.drugprevention.backend.repository;
 
 import com.swp.drugprevention.backend.io.ProfileRequest;
 import com.swp.drugprevention.backend.io.ProfileResponse;
+import com.swp.drugprevention.backend.model.User;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 public interface ProfileService {
     ProfileResponse createProfile(ProfileRequest request);
@@ -16,4 +18,5 @@ public interface ProfileService {
 
     void verifyOtp(String otp);
 
+    User loginRegisterByGoogleOAuth2(OAuth2AuthenticationToken oAuth2AuthenticationToken);
 }
