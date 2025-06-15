@@ -1,4 +1,4 @@
-package com.swp.drugprevention.backend.model;
+package com.swp.drugprevention.backend.enums;
 
 public enum AuthenticationProvider {
     LOCAL, GOOGLE
