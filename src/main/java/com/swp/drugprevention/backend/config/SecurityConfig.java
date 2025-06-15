@@ -38,8 +38,12 @@ public class SecurityConfig {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->auth
-                        .requestMatchers("/login", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp")
+                        .requestMatchers("/login","/google", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp", "/loginSuccess")
                         .permitAll().anyRequest().authenticated())
+                .formLogin(Customizer.withDefaults())
+                .oauth2Login(oauth2 ->oauth2
+                        .defaultSuccessUrl("/loginSuccess", true)
+                        .failureUrl("/loginFailure"))
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//mỗi lần gửi request là phải có token ở header để xác thực, vì dùng STATELESS không cho lưu session
                 .logout(AbstractHttpConfigurer::disable) //vì đã không cho lưu session nên không có session để xóa nên tính năng logout mặc định của spring security ko cần thiết
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)//dùng để chèn bộ lọc jwtRequestFilter trước bộ lọc UsernamePasswordAuthenticationFilter, //mục đích là để bộ lọc jwt kiểm tra token có hợp lệ hay không trước đã
@@ -59,7 +63,7 @@ public class SecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080"));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

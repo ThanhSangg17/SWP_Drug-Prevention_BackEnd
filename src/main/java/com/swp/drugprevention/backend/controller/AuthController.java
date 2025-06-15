@@ -4,6 +4,7 @@ import com.swp.drugprevention.backend.io.AuthRequest;
 import com.swp.drugprevention.backend.io.AuthResponse;
 import com.swp.drugprevention.backend.io.OtpRequest;
 import com.swp.drugprevention.backend.io.ResetPasswordRequest;
+import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.service.AppUserDetailsService;
 import com.swp.drugprevention.backend.util.JwtUtil;
@@ -20,9 +21,12 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.net.URI;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,6 +77,37 @@ public class AuthController {
 
     private void authenticate(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    }
+
+    @GetMapping("/google")
+    public ResponseEntity<String> loginGoogleAuth() {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create("/api/v1.0/oauth2/authorization/google"))
+                .build();
+    }
+
+    @GetMapping("/loginSuccess")
+    public ResponseEntity<?> handleGoogleSuccess(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+        User user = profileService.loginRegisterByGoogleOAuth2(oAuth2AuthenticationToken);
+        UserDetails userDetails = appUserDetailsService.loadUserByUsername(user.getEmail());
+        String jwtToken = jwtUtil.generateToken(userDetails);
+        ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(Duration.ofDays(1))
+                .sameSite("Strict")
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new AuthResponse(user.getEmail(), jwtToken));
+    }
+
+    @GetMapping("/loginFailure")
+    public ResponseEntity<?> handleGoogleFailure() {
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", true);
+        error.put("message", "Google authentication failed");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @GetMapping("/is-authenticated")

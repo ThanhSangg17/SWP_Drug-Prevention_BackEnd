@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.model;
 
+import com.swp.drugprevention.backend.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

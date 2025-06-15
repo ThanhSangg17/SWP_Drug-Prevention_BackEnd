@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.model;
 
+import com.swp.drugprevention.backend.enums.AuthenticationProvider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
