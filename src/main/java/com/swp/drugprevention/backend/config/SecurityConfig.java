@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->auth
                         .requestMatchers("/login","/google", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp", "/loginSuccess")
+
                         .permitAll().anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 ->oauth2
