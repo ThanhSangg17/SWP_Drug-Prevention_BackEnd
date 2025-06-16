@@ -1,6 +1,6 @@
 package com.swp.drugprevention.backend.service;
 
-import com.swp.drugprevention.backend.dtoRequest.AppointmentRequest;
+import com.swp.drugprevention.backend.io.AppointmentRequest;
 import com.swp.drugprevention.backend.model.Appointment;
 import com.swp.drugprevention.backend.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
