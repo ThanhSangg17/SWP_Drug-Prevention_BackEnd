@@ -1,9 +1,10 @@
 package com.swp.drugprevention.backend.service;
 
 import com.swp.drugprevention.backend.enums.AuthenticationProvider;
-import com.swp.drugprevention.backend.io.PendingRegistration;
-import com.swp.drugprevention.backend.io.ProfileRequest;
-import com.swp.drugprevention.backend.io.ProfileResponse;
+import com.swp.drugprevention.backend.enums.RoleName;
+import com.swp.drugprevention.backend.io.request.PendingRegistration;
+import com.swp.drugprevention.backend.io.request.ProfileRequest;
+import com.swp.drugprevention.backend.io.response.ProfileResponse;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.repository.UserRepository;
@@ -17,10 +18,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -170,6 +173,8 @@ public class ProfileServiceImpl implements ProfileService {
                 .yob(newProfile.getYob())
                 .gender(newProfile.getGender())
                 .phone(newProfile.getPhone())
+                .roleName(newProfile.getRoleName())
+                .authenticationProvider(newProfile.getAuthProvider())
                 .build();
     }
 
@@ -186,10 +191,13 @@ public class ProfileServiceImpl implements ProfileService {
                 .verifyOtpExpireAt(0L)
                 .resetOtp(null)
                 .authProvider(AuthenticationProvider.LOCAL)
+                .roleName(RoleName.USER) // Gán roleName mặc định là USER
                 .build();
 
 
     }
+
+
     public User loginRegisterByGoogleOAuth2(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
         OAuth2User oAuth2User = oAuth2AuthenticationToken.getPrincipal();
         String email = oAuth2User.getAttribute("email");
@@ -204,9 +212,19 @@ public class ProfileServiceImpl implements ProfileService {
             user.setFullName(name);
             user.setEmail(email);
             user.setAuthProvider(AuthenticationProvider.GOOGLE);
+            user.setRoleName(RoleName.USER); // Gán roleName mặc định là USER khi đăng nhập với Google
             return userRepository.save(user);
         }
         return user;
+    }
+
+    @Override
+    public List<ProfileResponse> getAllUserProfile() {
+        // Lấy tất cả user và ánh xạ thành danh sách ProfileResponse
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(this::convertToProfileResponse)
+                .collect(Collectors.toList());
     }
 
 }

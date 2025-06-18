@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,6 +28,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true) // Bật hỗ trợ @PreAuthorize
 public class SecurityConfig {
 
     private final AppUserDetailsService appUserDetailsService;
@@ -39,9 +41,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->auth
                         .requestMatchers("/login","/google", "/register", "/send-reset-otp", "/reset-password", "/logout", "/send-otp", "/verify-otp", "/loginSuccess")
-
                         .permitAll().anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
+                //.formLogin(Customizer.withDefaults()) //bỏ form login mặc định của spring security, vì mình dùng oauth2Login -> cái này dẫn đến không đăng nhập được bằng form login lấy dữ liệu dưới database
                 .oauth2Login(oauth2 ->oauth2
                         .defaultSuccessUrl("/loginSuccess", true)
                         .failureUrl("/loginFailure"))

@@ -1,6 +1,5 @@
-package com.swp.drugprevention.backend.io;
+package com.swp.drugprevention.backend.io.request;
 
-import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
 

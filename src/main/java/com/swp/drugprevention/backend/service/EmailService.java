@@ -15,14 +15,14 @@ public class EmailService {
     @Value("${spring.mail.properties.mail.smtp.from}")
     private String fromEmail;
 
-    public void sendWelcomeEmail(String toEmail, String name) {
+    /*public void sendWelcomeEmail(String toEmail, String name) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
         message.setSubject("Welcome to Drug-Prevention Platform");
         message.setText("Hello"+name+",\n\nThanks for registering with us!\n\nRegards, \nAnti-Drug Team");
         mailSender.send(message);
-    }
+    }*/
 
     public void sendResetOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();

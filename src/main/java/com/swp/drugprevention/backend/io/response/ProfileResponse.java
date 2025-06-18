@@ -1,7 +1,9 @@
-package com.swp.drugprevention.backend.io;
+package com.swp.drugprevention.backend.io.response;
 
 
 import com.swp.drugprevention.backend.enums.AuthenticationProvider;
+import com.swp.drugprevention.backend.enums.RoleName;
+import com.swp.drugprevention.backend.model.User;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +38,19 @@ public class ProfileResponse {
     @Pattern(regexp = "\\d{10}|\\d{11}", message = "Invalid phone number format. Must be 10 or 11 digits.")
     private String phone;
 
+    private RoleName roleName;
     private AuthenticationProvider authenticationProvider;
+
+    public static ProfileResponse fromEntity(User user) {
+        return ProfileResponse.builder()
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .gender(user.getGender())
+                .yob(user.getYob())
+                .roleName(user.getRoleName())
+                .authenticationProvider(user.getAuthProvider())
+                .build();
+    }
 }
 
