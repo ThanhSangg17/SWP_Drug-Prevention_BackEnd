@@ -14,7 +14,7 @@ public class ConsultantController {
     @Autowired
     ConsultantService service;
 
-    @PostMapping("/create")
+    @PostMapping(value = "/create")
     Consultant create(@RequestBody ConsultantRequest request){
         return service.saveConsultant(request);
     }
