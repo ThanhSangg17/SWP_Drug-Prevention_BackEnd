@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "Feedbacks")
 @Getter
@@ -14,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Feedback {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FeedbackID")
     private Integer feedbackId;
 
@@ -33,9 +36,9 @@ public class Feedback {
     @JoinColumn(name = "CourseID", referencedColumnName = "CourseID")
     private Course course;
 
-    @Column(name = "Content", columnDefinition = "TEXT")
+    @Column(name = "Content")
     private String content;
 
     @Column(name = "Date")
-    private java.sql.Date date;
+    private LocalDate date;
 }

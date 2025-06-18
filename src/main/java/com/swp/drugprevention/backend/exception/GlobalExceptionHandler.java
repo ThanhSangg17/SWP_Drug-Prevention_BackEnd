@@ -23,5 +23,8 @@ public class GlobalExceptionHandler {
     }
 
     //có thể thêm các handler khác nếu muốn
-
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRunTimeException(RuntimeException exception){
+        return ResponseEntity.badRequest().body(exception.getMessage());
+    }
 }

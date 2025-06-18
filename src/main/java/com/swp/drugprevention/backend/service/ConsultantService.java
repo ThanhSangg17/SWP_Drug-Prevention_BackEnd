@@ -12,7 +12,7 @@ public class ConsultantService {
     @Autowired
     private ConsultantRepository consultantRepository;
 
-    public List<Consultant> getAllConsultants(){
+    public List<Consultant> getAllConsultants() {
         return consultantRepository.findAll();
     }
 

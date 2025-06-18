@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.util.List;
 
+
 @Entity
 @Table(name = "Consultants")
 @Getter
@@ -28,7 +29,7 @@ public class Consultant {
     @Column(name = "Specialization", length = 255)
     private String specialization;
 
-    @Column(name = "Availability", columnDefinition = "TEXT")
+    @Column(name = "Availability")
     private String availability;
 
     @Column(name = "Schedule", length = 255)
