@@ -1,9 +1,9 @@
 package com.swp.drugprevention.backend.controller;
 
-import com.swp.drugprevention.backend.io.AuthRequest;
-import com.swp.drugprevention.backend.io.AuthResponse;
-import com.swp.drugprevention.backend.io.OtpRequest;
-import com.swp.drugprevention.backend.io.ResetPasswordRequest;
+import com.swp.drugprevention.backend.io.request.AuthRequest;
+import com.swp.drugprevention.backend.io.response.AuthResponse;
+import com.swp.drugprevention.backend.io.request.OtpRequest;
+import com.swp.drugprevention.backend.io.request.ResetPasswordRequest;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.service.AppUserDetailsService;
@@ -25,7 +25,6 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.HashMap;
