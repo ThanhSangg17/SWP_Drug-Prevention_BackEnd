@@ -18,10 +18,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-//là một bộ lọc dùng để lọc các yêu cầu http từ client -> thành công hoặc thất bại dựa vào token
 @Component
 @RequiredArgsConstructor
-public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đã được client gửi lên
+public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtil jwtUtil;
@@ -32,14 +31,17 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
             "/send-reset-otp",
             "/reset-password",
             "/logout",
-            "/verify-otp" // Thêm dòng này
+            "/verify-otp",
+            "/loginSuccess"
     );
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getServletPath();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
         System.out.println("Processing path: " + path);
 
+        // Bỏ qua các URL công khai
         if (PUBLIC_URLS.contains(path)) {
             System.out.println("Public URL, skipping authentication");
             filterChain.doFilter(request, response);
@@ -56,7 +58,9 @@ public class JwtRequestFilter extends OncePerRequestFilter { //xử lý token đ
             System.out.println("JWT from header: " + jwt);
         }
 
+        System.out.println("Using JWT from header: " + (jwt != null ? "Yes" : "No"));
         if (jwt == null) {
+            System.out.println("Falling back to cookie JWT");
             Cookie[] cookies = request.getCookies();
             System.out.println("Cookies available: " + (cookies != null));
             if (cookies != null) {

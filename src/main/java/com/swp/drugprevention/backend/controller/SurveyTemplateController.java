@@ -104,8 +104,10 @@ public class SurveyTemplateController {
     public ResponseEntity<?> submitSurvey(@PathVariable Integer surveyId,
                                           @RequestBody SubmitSurveyRequest request,
                                           @AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println("Controller - UserDetails: " + (userDetails != null ? userDetails.getUsername() : "null"));
         Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
         if (user.isEmpty()) {
+            System.out.println("Controller - User not found: " + userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
         }
 
