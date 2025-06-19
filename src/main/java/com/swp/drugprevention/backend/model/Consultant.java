@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.util.List;
 
+
 @Entity
 @Table(name = "Consultants")
 @Getter
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Consultant {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ConsultantID")
     private Integer consultantId;
 
@@ -28,7 +30,7 @@ public class Consultant {
     @Column(name = "Specialization", length = 255)
     private String specialization;
 
-    @Column(name = "Availability", columnDefinition = "TEXT")
+    @Column(name = "Availability")
     private String availability;
 
     @Column(name = "Schedule", length = 255)

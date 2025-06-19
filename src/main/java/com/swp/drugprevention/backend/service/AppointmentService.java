@@ -12,7 +12,6 @@ import java.util.List;
 public class AppointmentService {
     @Autowired
     private AppointmentRepository appointmentRepository;
-
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
     }

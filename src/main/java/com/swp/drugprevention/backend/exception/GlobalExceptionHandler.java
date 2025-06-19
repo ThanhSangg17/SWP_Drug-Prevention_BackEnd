@@ -24,6 +24,7 @@ public class GlobalExceptionHandler {
     }
 
     //có thể thêm các handler khác nếu muốn
+
     @ExceptionHandler(SameRoleException.class)
     public ResponseEntity<?> handleSameRoleException(SameRoleException ex) {
         return ResponseEntity
@@ -44,5 +45,8 @@ public class GlobalExceptionHandler {
                         "message", "Insufficient permissions",
                         "details", details
                 ));
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRunTimeException(RuntimeException exception){
+        return ResponseEntity.badRequest().body(exception.getMessage());
     }
 }
