@@ -15,6 +15,7 @@ public class ConsultantController {
     ConsultantService service;
 
     @PostMapping("/create")
+
     Consultant create(@RequestBody ConsultantRequest request){
         return service.saveConsultant(request);
     }

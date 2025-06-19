@@ -1,8 +1,12 @@
 package com.swp.drugprevention.backend.controller;
 
+import com.swp.drugprevention.backend.enums.RoleName;
 import com.swp.drugprevention.backend.exception.EmailAlreadyExistsException;
-import com.swp.drugprevention.backend.io.ProfileRequest;
-import com.swp.drugprevention.backend.io.ProfileResponse;
+import com.swp.drugprevention.backend.exception.SameRoleException;
+import com.swp.drugprevention.backend.io.request.ProfileRequest;
+import com.swp.drugprevention.backend.io.request.RoleUpdateRequest;
+import com.swp.drugprevention.backend.io.response.ProfileResponse;
+import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.repository.UserRepository;
 import com.swp.drugprevention.backend.service.EmailService;
@@ -11,9 +15,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.*;
-/// /////
+
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class ProfileController {
@@ -42,5 +49,31 @@ public class ProfileController {
         return profileService.getProfile(email);
     }
 
+    @PutMapping("/{userId}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProfileResponse> updateUserRoles(@PathVariable Integer userId, @RequestBody RoleUpdateRequest roleUpdateRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("UserID is not found: " + userId));
 
+        RoleName newRoleName = roleUpdateRequest.getRoleName();
+        RoleName currentRoleName = user.getRoleName();
+
+        if (newRoleName == currentRoleName) {
+            throw new SameRoleException("The new role '" + newRoleName + "' is the same as the current role.");
+        }
+
+        user.setRoleName(newRoleName); // Cập nhật roleName trong User
+        User updatedUser = userRepository.save(user);
+
+        ProfileResponse profileResponse = profileService.getProfile(updatedUser.getEmail());
+        return ResponseEntity.ok()
+                .header("X-Custom-Message", "User role updated successfully for user ID: " + userId)
+                .body(profileResponse);
+    }
+    @GetMapping("/profileAllUser")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ProfileResponse>> getAllUserProfile() {
+        List<ProfileResponse> allProfiles = profileService.getAllUserProfile();
+        return ResponseEntity.ok(allProfiles);
+    }
 }

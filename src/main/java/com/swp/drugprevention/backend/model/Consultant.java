@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Consultant {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ConsultantID")
     private Integer consultantId;
 

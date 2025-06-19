@@ -1,6 +1,9 @@
 package com.swp.drugprevention.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.swp.drugprevention.backend.enums.AuthenticationProvider;
+import com.swp.drugprevention.backend.enums.RoleName;
+import com.swp.drugprevention.backend.model.survey.Survey;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -66,18 +69,19 @@ public class User {
         this.password = password;
     }
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
+    @Column(name = "roleName", nullable = false, length = 50)
+    private RoleName roleName; // Thêm cột roleName thay cho mối quan hệ với Role
+    /*@ManyToOne
     @JoinColumn(name = "RoleID", referencedColumnName = "RoleID")
-    private Role role;
+    private Role role;*/
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Enrollment> enrollments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Survey> surveys;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<DashBoardSurvey> dashBoardSurveys;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments;

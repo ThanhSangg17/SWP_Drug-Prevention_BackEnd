@@ -1,9 +1,8 @@
-package com.swp.drugprevention.backend.io;
+package com.swp.drugprevention.backend.io.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
