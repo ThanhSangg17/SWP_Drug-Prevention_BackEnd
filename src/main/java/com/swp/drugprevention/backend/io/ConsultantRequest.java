@@ -1,4 +1,4 @@
-package com.swp.drugprevention.backend.io;
+package com.swp.drugprevention.backend.io.request;
 
 public class ConsultantRequest {
     private String name;
