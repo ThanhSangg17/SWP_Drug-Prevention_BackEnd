@@ -12,6 +12,7 @@ import java.util.List;
 public class ConsultantService {
     @Autowired
     private ConsultantRepository consultantRepository;
+
     public List<Consultant> getAllConsultants() {
         return consultantRepository.findAll();
     }
