@@ -1,4 +1,4 @@
-package com.swp.drugprevention.backend.io.request;
+package com.swp.drugprevention.backend.io;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,27 +1,44 @@
-package com.swp.drugprevention.backend.repository;
+package com.swp.drugprevention.backend.service;
 
-import com.swp.drugprevention.backend.io.ProfileRequest;
-import com.swp.drugprevention.backend.io.ProfileResponse;
 import com.swp.drugprevention.backend.enums.AuthenticationProvider;
 import com.swp.drugprevention.backend.enums.RoleName;
 import com.swp.drugprevention.backend.io.request.PendingRegistration;
 import com.swp.drugprevention.backend.io.request.ProfileRequest;
 import com.swp.drugprevention.backend.io.response.ProfileResponse;
 import com.swp.drugprevention.backend.model.User;
+import com.swp.drugprevention.backend.repository.ProfileService;
+import com.swp.drugprevention.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-public interface ProfileService {
-    ProfileResponse createProfile(ProfileRequest request);
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
-    ProfileResponse getProfile(String email);
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ProfileServiceImpl implements ProfileService {
 
-    void sendResetOtp(String email);
+    private final Map<String, PendingRegistration> pendingRegistrations = new ConcurrentHashMap<>();
 
-    void resetPassword(String email, String otp, String newPassword);
+    private final UserRepository userRepository;
 
-    void sendOtp(ProfileRequest request);
+    private final PasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
+
+
 
     @Override
     public ProfileResponse createProfile(ProfileRequest request) {
@@ -59,9 +76,9 @@ public interface ProfileService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
 
         //Generate 6 digit otp
-       String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
 
-       //calculate expiry time (current time + 15 minutes in milliseconds) (time hết hạn)
+        //calculate expiry time (current time + 15 minutes in milliseconds) (time hết hạn)
         long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
 
         //update the profile/user
@@ -209,4 +226,56 @@ public interface ProfileService {
                 .map(this::convertToProfileResponse)
                 .collect(Collectors.toList());
     }
+
 }
+
+//những hàm đã được sửa bên trên
+//không cần nữa bởi vì hàm này verify khi đã đăng nhập, điều này không cần thiết nên xóa đi
+    /*@Override
+    public void verifyOtp(String email, String otp) {
+        User existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
+        if (existingUser.getVerifyOTP() == null || !existingUser.getVerifyOTP().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (existingUser.getVerifyOtpExpireAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP Expired");
+        }
+
+        existingUser.setIsAccountVerified(true);
+        existingUser.setVerifyOTP(null);
+        existingUser.setVerifyOtpExpireAt(0L);
+
+        userRepository.save(existingUser);
+    }*/
+
+//cái này tương tự, vì cần phải đăng nhập mới có email để gửi mà email lấy từ database nên cũng xóa đi
+// vì khi đăng kí thì chưa có email dưới database
+    /*@Override
+    public void sendOtp(String email) {
+        User existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
+        if (existingUser.getIsAccountVerified() != null && existingUser.getIsAccountVerified()) {
+            return;
+        }
+
+        //Generate 6 digit OTP
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+
+        //calculate expiry time (current time + 24 hours in milliseconds) (time hết hạn)
+        long expiryTime = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
+
+        //Update the user entity
+        existingUser.setVerifyOTP(otp);
+        existingUser.setVerifyOtpExpireAt(expiryTime);
+
+        //save to database
+        userRepository.save(existingUser);
+
+        try {
+            emailService.sendOtpEmail(existingUser.getEmail(), otp);
+        }catch (Exception e) {
+            throw new RuntimeException("Unable to send email");
+        }
+    }*/
