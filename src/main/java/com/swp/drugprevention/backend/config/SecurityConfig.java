@@ -18,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,7 +28,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true) // Bật hỗ trợ @PreAuthorize
 public class SecurityConfig {
 
     private final AppUserDetailsService appUserDetailsService;
@@ -38,25 +37,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
+        http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth ->auth
                         .requestMatchers("/login", "/google", "/register", "/send-reset-otp", "/reset-password",
                                 "/logout", "/send-otp", "/verify-otp", "/loginSuccess").permitAll()
                         .requestMatchers("/api/v1.0/survey-template/**").authenticated()
                         .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
+                //.formLogin(Customizer.withDefaults()) //bỏ form login mặc định của spring security, vì mình dùng oauth2Login -> cái này dẫn đến không đăng nhập được bằng form login lấy dữ liệu dưới database
+                .oauth2Login(oauth2 ->oauth2
                         .defaultSuccessUrl("/loginSuccess", true)
                         .failureUrl("/loginFailure"))
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .logout(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new SecurityContextPersistenceFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Thêm JwtRequestFilter trước
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint));
-
+                .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//mỗi lần gửi request là phải có token ở header để xác thực, vì dùng STATELESS không cho lưu session
+                .logout(AbstractHttpConfigurer::disable) //vì đã không cho lưu session nên không có session để xóa nên tính năng logout mặc định của spring security ko cần thiết
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)//dùng để chèn bộ lọc jwtRequestFilter trước bộ lọc UsernamePasswordAuthenticationFilter, //mục đích là để bộ lọc jwt kiểm tra token có hợp lệ hay không trước đã
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint)); //xác thực không thành công nghĩa là chưa đăng nhập thì nó sẽ hiện ra ngoại lệ do mình cài đặt ở customAuthenticationEntryPoint
         return http.build();
     }
 
@@ -70,10 +65,11 @@ public class SecurityConfig {
         return new CorsFilter(corsConfigurationSource());
     }
 
+    // lien ket fe
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -88,4 +84,5 @@ public class SecurityConfig {
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(authenticationProvider);
     }
+
 }

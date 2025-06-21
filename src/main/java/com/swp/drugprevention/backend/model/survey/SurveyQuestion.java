@@ -1,6 +1,5 @@
 package com.swp.drugprevention.backend.model.survey;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,7 +18,6 @@ public class SurveyQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer questionId;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "templateId")
     private SurveyTemplate template;
@@ -31,6 +29,5 @@ public class SurveyQuestion {
     private Integer maxScore;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<SurveyOption> options;
 }

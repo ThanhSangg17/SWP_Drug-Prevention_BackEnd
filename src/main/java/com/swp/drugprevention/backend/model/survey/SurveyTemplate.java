@@ -1,6 +1,5 @@
 package com.swp.drugprevention.backend.model.survey;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.swp.drugprevention.backend.enums.AgeGroup;
 import com.swp.drugprevention.backend.enums.GenderGroup;
 import com.swp.drugprevention.backend.enums.RiskLevel;
@@ -45,7 +44,6 @@ public class SurveyTemplate {
     private RiskLevel riskLevel;
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<SurveyQuestion> questions = new ArrayList<>();
 
 

@@ -45,8 +45,10 @@ public class GlobalExceptionHandler {
                         "message", "Insufficient permissions",
                         "details", details
                 ));
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRunTimeException(RuntimeException exception){
-        return ResponseEntity.badRequest().body(exception.getMessage());
     }
-}
+        @ExceptionHandler(RuntimeException.class)
+        public ResponseEntity<String> handleRunTimeException (RuntimeException exception){
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+

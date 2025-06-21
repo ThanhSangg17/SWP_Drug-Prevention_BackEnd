@@ -23,7 +23,7 @@ public class Survey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer surveyId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "UserID", nullable = false)
     @JsonBackReference
     private User user;
@@ -48,7 +48,7 @@ public class Survey {
 
     private String status; // Completed, In Progress
 
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<SurveyAnswer> answers;
 }

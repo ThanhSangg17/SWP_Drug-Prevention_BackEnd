@@ -35,15 +35,10 @@ public class JwtUtil {
 
     //giải mã và xác minh token được gửi từ client
     private Claims extractAllClaims(String token) {
-        try {
-            return Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (Exception e) {
-            System.out.println("Failed to extract claims: " + e.getMessage());
-            return null; // Trả về null nếu thất bại
-        }
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -65,13 +60,6 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = extractEmail(token);
-        System.out.println("Validating token for email: " + email);
-        if (email == null) {
-            System.out.println("Email extraction failed");
-            return false;
-        }
-        boolean isValid = (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
-        System.out.println("Validation result: " + isValid);
-        return isValid;
+        return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }
