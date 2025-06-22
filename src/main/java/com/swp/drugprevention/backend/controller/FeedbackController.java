@@ -18,18 +18,22 @@ public class FeedbackController {
     Feedback create(@RequestBody FeedbackRequest feedbackRequest) {
         return service.saveFeedback(feedbackRequest);
     }
+
     @GetMapping(value = "/getAllFeedback")
     List<Feedback> getFeedback(){
         return service.getAllFeedbacks();
     }
+
     @GetMapping(value = "/getById/{feedbackId}")
     Feedback getFeedbackById(@PathVariable("feedbackId") Integer id){
         return service.getFeedbackById(id);
     }
+
     @PutMapping("/update/{feedbackId}")
-    Feedback updateFeedback(@PathVariable("feedbackId") Integer id,@RequestBody FeedbackRequest request){
+    Feedback updateFeedback(@PathVariable("feedbackId") Integer id, @RequestBody FeedbackRequest request){
         return service.updateFeedback(id, request);
     }
+
     @DeleteMapping("/delete/{feedbackId}")
     String deleteFeedback(@PathVariable("feedbackId") Integer id){
         service.deleteFeedback(id);

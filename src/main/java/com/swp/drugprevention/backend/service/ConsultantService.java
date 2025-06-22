@@ -1,11 +1,12 @@
 package com.swp.drugprevention.backend.service;
 
-import com.swp.drugprevention.backend.io.ConsultantRequest;
+import com.swp.drugprevention.backend.io.request.ConsultantRequest;
 import com.swp.drugprevention.backend.model.Consultant;
 import com.swp.drugprevention.backend.repository.ConsultantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,7 +15,9 @@ public class ConsultantService {
     private ConsultantRepository consultantRepository;
 
     public List<Consultant> getAllConsultants() {
-        return consultantRepository.findAll();
+        return consultantRepository.findAll().stream()
+                .filter(Consultant::isAvailability)
+                .toList();
     }
 
     public Consultant saveConsultant(ConsultantRequest request) {
@@ -22,7 +25,7 @@ public class ConsultantService {
         consultant.setName(request.getName());
         consultant.setEmail(request.getEmail());
         consultant.setSpecialization(request.getSpecialization());
-        consultant.setAvailability(request.getAvailability());
+        consultant.setAvailability(request.isAvailability());
         consultant.setSchedule(request.getSchedule());
         return consultantRepository.save(consultant);
     }
@@ -36,7 +39,7 @@ public class ConsultantService {
         consultant.setName(request.getName());
         consultant.setEmail(request.getEmail());
         consultant.setSpecialization(request.getSpecialization());
-        consultant.setAvailability(request.getAvailability());
+        consultant.setAvailability(request.isAvailability());
         consultant.setSchedule(request.getSchedule());
         return consultantRepository.save(consultant);
     }

@@ -41,4 +41,14 @@ public class Feedback {
 
     @Column(name = "Date")
     private LocalDate date;
+
+    @PrePersist
+    protected void onCreate() {
+        this.date = LocalDate.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.date = LocalDate.now();
+    }
 }

@@ -30,8 +30,8 @@ public class Consultant {
     @Column(name = "Specialization", length = 255)
     private String specialization;
 
-    @Column(name = "Availability")
-    private String availability;
+    @Column(name = "Availability",nullable = false)
+    private boolean availability;
 
     @Column(name = "Schedule", length = 255)
     private String schedule;
@@ -44,7 +44,4 @@ public class Consultant {
 
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
     private List<Program> programs;
-
-    @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
-    private List<Feedback> feedbacks;
 }
