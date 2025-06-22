@@ -29,11 +29,9 @@ public class SurveyService {
     private final DashboardSurveyService dashboardSurveyService;
     private final SurveyOptionRepository surveyOptionRepository;
 
-    // Bắt đầu một survey mới từ template phù hợp với tuổi
-    public Survey startSurvey(User user) {
-        SurveyTemplate template = chooseTemplate(user);
+    public Survey startSurvey(User user, SurveyTemplate template) {
         if (template == null) {
-            throw new IllegalStateException("No survey template available for this user.");
+            throw new IllegalStateException("No survey template provided.");
         }
 
         Survey survey = Survey.builder()

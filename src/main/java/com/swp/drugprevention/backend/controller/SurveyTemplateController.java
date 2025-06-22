@@ -9,6 +9,7 @@ import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.Survey;
 import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
 import com.swp.drugprevention.backend.repository.UserRepository;
+import com.swp.drugprevention.backend.repository.surveyRepo.SurveyTemplateRepository;
 import com.swp.drugprevention.backend.service.surveyService.SurveyService;
 import com.swp.drugprevention.backend.service.surveyService.SurveyTemplateService;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +33,17 @@ public class SurveyTemplateController {
     private final SurveyTemplateService service;
     private final UserRepository userRepository;
     private final SurveyService surveyService;
+    private final SurveyTemplateRepository surveyTemplateRepository;
     @PostMapping("/start")
-    public ResponseEntity<?> startSurvey(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> startSurvey(@AuthenticationPrincipal UserDetails userDetails,
+                                         @RequestParam Integer templateId) {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Survey survey = surveyService.startSurvey(user);
+        SurveyTemplate template = surveyTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Survey template not found"));
+
+        Survey survey = surveyService.startSurvey(user, template);
         SurveyResponse response = surveyService.toResponseDTO(survey);
         return ResponseEntity.ok(response);
     }
