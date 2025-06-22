@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->auth
                         .requestMatchers("/login", "/google", "/register", "/send-reset-otp", "/reset-password",
                                 "/logout", "/send-otp", "/verify-otp", "/loginSuccess").permitAll()
-                        .requestMatchers("/api/v1.0/survey-template/**").authenticated()
+                        .requestMatchers("/api/v1.0/survey-template/**", "/api/v1.0/admin/dashboard/**").authenticated()
                         .anyRequest().authenticated())
                 //.formLogin(Customizer.withDefaults()) //bỏ form login mặc định của spring security, vì mình dùng oauth2Login -> cái này dẫn đến không đăng nhập được bằng form login lấy dữ liệu dưới database
                 .oauth2Login(oauth2 ->oauth2

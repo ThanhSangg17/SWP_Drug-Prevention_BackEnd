@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.service.surveyService;
 
+import com.swp.drugprevention.backend.io.response.DashboardSurveyResponse;
 import com.swp.drugprevention.backend.model.survey.DashboardSurvey;
 import com.swp.drugprevention.backend.model.survey.Survey;
 import com.swp.drugprevention.backend.repository.surveyRepo.DashboardSurveyRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,19 +31,32 @@ public class DashboardSurveyService {
         });
     }
 
-    private String generateRecommendation(Integer score) {
-        if (score == null) return "No data available.";
-        if (score < 10) return "Low risk. Keep up the good habits.";
-        if (score < 20) return "Medium risk. Consider reviewing your behaviors.";
-        return "High risk. Seek professional counseling.";
+    public String generateRecommendation(int totalScore) {
+        if (totalScore == 0) return "Không có nguy cơ nào. Tiếp tục duy trì lối sống lành mạnh bạn nhé.";
+        if (totalScore < 10) return "Nguy cơ thấp. Hãy duy trì lối sống lành mạnh.";
+        if (totalScore < 20) return "Nguy cơ trung bình. Nên tham khảo chuyên gia.";
+        return "Nguy cơ cao. Khuyến nghị tư vấn tâm lý ngay.";
     }
 
-    public List<DashboardSurvey> getAll() {
-        return dashboardSurveyRepository.findAll();
+    public List<DashboardSurveyResponse> getAll() {
+        return dashboardSurveyRepository.findAll().stream()
+                .map(dashboard -> DashboardSurveyResponse.builder()
+                        .dbSurveyId(dashboard.getDbSurveyId())
+                        .surveyId(dashboard.getSurvey().getSurveyId())
+                        .recommendation(dashboard.getRecommendation())
+                        .createdDate(dashboard.getCreatedDate())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    public DashboardSurvey getById(Integer id) {
+    public DashboardSurveyResponse getById(Integer id) {
         return dashboardSurveyRepository.findById(id)
+                .map(dashboard -> DashboardSurveyResponse.builder()
+                        .dbSurveyId(dashboard.getDbSurveyId())
+                        .surveyId(dashboard.getSurvey().getSurveyId())
+                        .recommendation(dashboard.getRecommendation())
+                        .createdDate(dashboard.getCreatedDate())
+                        .build())
                 .orElseThrow(() -> new RuntimeException("DashboardSurvey not found"));
     }
 

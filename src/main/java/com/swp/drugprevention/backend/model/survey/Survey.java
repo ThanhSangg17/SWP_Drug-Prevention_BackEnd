@@ -48,6 +48,8 @@ public class Survey {
 
     private String status; // Completed, In Progress
 
+    private String recommendation;
+
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<SurveyAnswer> answers;

@@ -16,6 +16,7 @@ public class SurveyResponse {
     private String status;
     private LocalDate takenDate;
     private int totalScore;
+    private String recommendation;
     private ProfileResponse user; // dùng DTO ProfileResponse
     private List<SurveyAnswerDTO> answers;
 

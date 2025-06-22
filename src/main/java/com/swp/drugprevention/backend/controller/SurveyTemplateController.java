@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp.drugprevention.backend.io.request.SubmitSurveyRequest;
 import com.swp.drugprevention.backend.io.response.SurveyResponse;
+import com.swp.drugprevention.backend.io.response.SurveyResultResponse;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.Survey;
 import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
@@ -31,65 +32,6 @@ public class SurveyTemplateController {
     private final SurveyTemplateService service;
     private final UserRepository userRepository;
     private final SurveyService surveyService;
-
-    @GetMapping
-    public List<SurveyTemplate> getAll() {
-        return service.getAllTemplates();
-    }
-
-    @GetMapping("/template/{id}")
-    public SurveyTemplate getOne(@PathVariable Integer id) {
-        return service.getTemplateById(id);
-    }
-
-    @PostMapping
-    public SurveyTemplate create(@RequestBody SurveyTemplate template) {
-        return service.createTemplate(template);
-    }
-
-    @PutMapping("/template/{id}")
-    public SurveyTemplate update(@PathVariable Integer id, @RequestBody SurveyTemplate template) {
-        return service.updateTemplate(id, template);
-    }
-
-    @DeleteMapping("/template/{id}")
-    public ResponseEntity<?> delete(@PathVariable Integer id) {
-        service.deleteTemplate(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/import")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<SurveyTemplate> templates = mapper.readValue(
-                    file.getInputStream(), new TypeReference<List<SurveyTemplate>>() {}
-            );
-
-            for (SurveyTemplate template : templates) {
-                if (template.getQuestions() != null) {
-                    for (var q : template.getQuestions()) {
-                        q.setTemplate(template);
-                        if (q.getOptions() != null) {
-                            for (var o : q.getOptions()) {
-                                o.setQuestion(q);
-                            }
-                        }
-                    }
-                }
-            }
-
-            List<SurveyTemplate> saved = templates.stream()
-                    .map(service::createTemplate)
-                    .toList();
-
-            return ResponseEntity.ok(saved);
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body("Import failed: " + e.getMessage());
-        }
-    }
-
     @PostMapping("/start")
     public ResponseEntity<?> startSurvey(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
@@ -122,7 +64,13 @@ public class SurveyTemplateController {
         }
 
         surveyService.submitSurvey(survey, request);
-        return ResponseEntity.ok("Survey submitted successfully.");
+
+        // Tạo response để trả về kết quả và khuyến nghị
+        SurveyResultResponse result = new SurveyResultResponse(
+               survey.getTotalScore(), survey.getRecommendation()
+        );
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/my")
@@ -137,19 +85,5 @@ public class SurveyTemplateController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/survey/{surveyId}")
-    public ResponseEntity<SurveyResponse> getSurveyDetail(@PathVariable Integer surveyId,
-                                                          @AuthenticationPrincipal UserDetails userDetails) {
-        Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
 
-        Optional<Survey> survey = surveyService.findSurveyById(surveyId);
-        if (survey.isEmpty() || !survey.get().getUser().getUserId().equals(user.get().getUserId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        return ResponseEntity.ok(surveyService.toResponseDTO(survey.get()));
-    }
 }

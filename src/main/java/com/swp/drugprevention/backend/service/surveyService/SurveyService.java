@@ -9,10 +9,7 @@ import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.*;
 import com.swp.drugprevention.backend.repository.CourseRepository;
 import com.swp.drugprevention.backend.repository.ProgramRepository;
-import com.swp.drugprevention.backend.repository.surveyRepo.DashboardSurveyRepository;
-import com.swp.drugprevention.backend.repository.surveyRepo.SurveyAnswerRepository;
-import com.swp.drugprevention.backend.repository.surveyRepo.SurveyRepository;
-import com.swp.drugprevention.backend.repository.surveyRepo.SurveyTemplateRepository;
+import com.swp.drugprevention.backend.repository.surveyRepo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +27,7 @@ public class SurveyService {
     private final SurveyAnswerRepository surveyAnswerRepository;
     private final DashboardSurveyRepository dashboardSurveyRepository;
     private final DashboardSurveyService dashboardSurveyService;
+    private final SurveyOptionRepository surveyOptionRepository;
 
     // Bắt đầu một survey mới từ template phù hợp với tuổi
     public Survey startSurvey(User user) {
@@ -83,14 +81,28 @@ public class SurveyService {
             SubmitSurveyRequest.AnswerDTO dto = answerMap.get(answer.getQuestion().getQuestionId());
             if (dto != null) {
                 answer.setAnswerText(dto.getAnswerText());
-                answer.setScore(dto.getScore());
-                totalScore += dto.getScore();
+                Integer questionScore = getOptionScore(answer.getQuestion().getQuestionId(), dto.getAnswerText());
+                if (questionScore != null) {
+                    answer.setScore(questionScore);
+                    totalScore += questionScore;
+                } else {
+                    // Nếu không tìm thấy score, có thể để mặc định là 0
+                    answer.setScore(0);
+                    System.out.println("Warning: No score found for questionId: " + answer.getQuestion().getQuestionId() +
+                            ", answerText: " + dto.getAnswerText());
+                }
+
             }
         }
-
+//không tính đc điểm một phần là do value nhập vào không khớp với giá trị trong survey_options -> tiếng anh tiếng việt
+        //hãy cập nhật lại value trong file json
         survey.setStatus("Completed");
         survey.setTotalScore(totalScore);
         survey.setTakenDate(LocalDate.now());
+
+        //format recommendation based on total score
+        String recommendation = generateRecommendation(totalScore);
+        survey.setRecommendation(recommendation);
 
         surveyRepository.save(survey);
         surveyAnswerRepository.saveAll(survey.getAnswers());
@@ -98,8 +110,16 @@ public class SurveyService {
         dashboardSurveyService.createIfNotExists(survey);
     }
 
+    // Phương thức mới để lấy score từ survey_options
+    private Integer getOptionScore(Integer questionId, String answerText) {
+        return surveyOptionRepository.findByQuestionQuestionIdAndValue(questionId, answerText)
+                .map(SurveyOption::getScore)
+                .orElse(null); // Trả về null nếu không tìm thấy
+    }
+
     // Sinh khuyến nghị dựa vào tổng điểm
-    private String generateRecommendation(int totalScore) {
+    public String generateRecommendation(int totalScore) {
+        if (totalScore == 0) return "Không có nguy cơ nào. Tiếp tục duy trì lối sống lành mạnh bạn nhé.";
         if (totalScore < 10) return "Nguy cơ thấp. Hãy duy trì lối sống lành mạnh.";
         if (totalScore < 20) return "Nguy cơ trung bình. Nên tham khảo chuyên gia.";
         return "Nguy cơ cao. Khuyến nghị tư vấn tâm lý ngay.";
@@ -144,6 +164,7 @@ public class SurveyService {
         dto.setStatus(survey.getStatus());
         dto.setTakenDate(survey.getTakenDate());
         dto.setTotalScore(survey.getTotalScore() != null ? survey.getTotalScore() : 0); // Gán 0 nếu null
+        dto.setRecommendation(survey.getRecommendation());
         dto.setUser(ProfileResponse.fromEntity(survey.getUser()));
 
         List<SurveyResponse.SurveyAnswerDTO> answerDTOs = survey.getAnswers().stream().map(answer -> {

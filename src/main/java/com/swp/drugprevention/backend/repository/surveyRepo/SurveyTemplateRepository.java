@@ -16,4 +16,5 @@ public interface SurveyTemplateRepository extends JpaRepository<SurveyTemplate, 
     );
     List<SurveyTemplate> findByAgeGroup(AgeGroup ageGroup);
 
+    SurveyTemplate findByName(String name);
 }

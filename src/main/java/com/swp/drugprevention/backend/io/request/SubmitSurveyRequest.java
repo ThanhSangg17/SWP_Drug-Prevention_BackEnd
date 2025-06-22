@@ -21,6 +21,5 @@ public class SubmitSurveyRequest {
     public static class AnswerDTO {
         private Integer questionId;
         private String answerText;
-        private Integer score;
     }
 }

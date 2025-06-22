@@ -1,13 +1,31 @@
 package com.swp.drugprevention.backend.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp.drugprevention.backend.io.request.SurveyTemplateUpdateRequest;
+import com.swp.drugprevention.backend.io.response.DashboardSurveyResponse;
+import com.swp.drugprevention.backend.io.response.SurveyResponse;
+import com.swp.drugprevention.backend.io.response.SurveyTemplateResponse;
+import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.DashboardSurvey;
+import com.swp.drugprevention.backend.model.survey.Survey;
+import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
+import com.swp.drugprevention.backend.repository.UserRepository;
 import com.swp.drugprevention.backend.service.surveyService.DashboardSurveyService;
+import com.swp.drugprevention.backend.service.surveyService.SurveyService;
+import com.swp.drugprevention.backend.service.surveyService.SurveyTemplateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin/dashboard")
@@ -15,23 +33,98 @@ import java.util.List;
 public class DashboardSurveyController {
 
     private final DashboardSurveyService dashboardSurveyService;
+    private final UserRepository userRepository;
+    private final SurveyService surveyService;
+    private final SurveyTemplateService service;
+
+    @PostMapping("/import-survey")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<SurveyTemplate> templates = mapper.readValue(
+                    file.getInputStream(), new TypeReference<List<SurveyTemplate>>() {}
+            );
+
+            for (SurveyTemplate template : templates) {
+                if (template.getQuestions() != null) {
+                    for (var q : template.getQuestions()) {
+                        q.setTemplate(template);
+                        if (q.getOptions() != null) {
+                            for (var o : q.getOptions()) {
+                                o.setQuestion(q);
+                            }
+                        }
+                    }
+                }
+            }
+
+            List<SurveyTemplate> saved = templates.stream()
+                    .map(service::createTemplate)
+                    .toList();
+
+            return ResponseEntity.ok().body("Imported " + saved.size() + " survey templates successfully.");
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Import failed: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/getAll-surveys")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<DashboardSurvey>> getAllSurveys() {
+    public ResponseEntity<List<DashboardSurveyResponse>> getAllSurveys() {
         return ResponseEntity.ok(dashboardSurveyService.getAll());
     }
 
-    @GetMapping("/surveys/{id}")
+    @GetMapping("/surveyDetail/{surveyId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DashboardSurvey> getSurveyById(@PathVariable Integer id) {
-        return ResponseEntity.ok(dashboardSurveyService.getById(id));
+    public ResponseEntity<SurveyResponse> getSurveyDetail(@PathVariable Integer surveyId,
+                                                          @AuthenticationPrincipal UserDetails userDetails) {
+        Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
+        System.out.println("Controller - UserDetails: " + (userDetails != null ? userDetails.getUsername() : "null"));
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Survey> survey = surveyService.findSurveyById(surveyId);
+        if (survey.isEmpty() || survey.get().getUser() == null || !survey.get().getUser().getUserId().equals(user.get().getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(surveyService.toResponseDTO(survey.get()));
     }
 
-    @DeleteMapping("/surveys/{id}")
+    @GetMapping("/getAll-templates")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteSurvey(@PathVariable Integer id) {
-        dashboardSurveyService.delete(id);
-        return ResponseEntity.ok().build();
+    public List<SurveyTemplateResponse> getAll() {
+        return service.getAllTemplates();
+    }
+
+    @GetMapping("/getOne-survey-template/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public SurveyTemplateResponse getOne(@PathVariable Integer id) {
+        return service.getTemplateById(id);
+    }
+
+    //Trong quá trình import survey nếu lỡ có sai sót gì thì có thể sửa lại -> Cũng hơi cần thiết
+    @PutMapping("/template-update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> update(@PathVariable Integer id, @RequestBody SurveyTemplateUpdateRequest request) {
+        try {
+            service.updateTemplate(id, request);
+            return ResponseEntity.ok("Success to update survey template with id " + id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Failed to update: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/template-delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
+        try {
+            service.deleteTemplate(id);
+            return ResponseEntity.ok().body("Survey template with id " + id + " deleted successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }
