@@ -42,7 +42,7 @@ public class SurveyService {
                 .status("In Progress")
                 .program(null)
                 .course(null)
-                .totalScore(0) // Khởi tạo totalScore mặc định là 0
+                .totalScore(0)
                 .build();
 
         Survey savedSurvey = surveyRepository.save(survey);
@@ -65,8 +65,6 @@ public class SurveyService {
         return savedSurvey;
     }
 
-
-    // Nộp survey sau khi người dùng hoàn thành
     public void submitSurvey(Survey survey, SubmitSurveyRequest request) {
         Map<Integer, SubmitSurveyRequest.AnswerDTO> answerMap = new HashMap<>();
         for (SubmitSurveyRequest.AnswerDTO dto : request.getAnswers()) {
@@ -74,32 +72,45 @@ public class SurveyService {
         }
 
         int totalScore = 0;
+        String surveyType = survey.getSurveyType();
 
         for (SurveyAnswer answer : survey.getAnswers()) {
             SubmitSurveyRequest.AnswerDTO dto = answerMap.get(answer.getQuestion().getQuestionId());
             if (dto != null) {
                 answer.setAnswerText(dto.getAnswerText());
-                Integer questionScore = getOptionScore(answer.getQuestion().getQuestionId(), dto.getAnswerText());
-                if (questionScore != null) {
-                    answer.setScore(questionScore);
-                    totalScore += questionScore;
+                if ("CRAFFT".equalsIgnoreCase(surveyType)) {
+                    // Tính điểm cho CRAFFT
+                    if ("YES".equalsIgnoreCase(dto.getAnswerText())) {
+                        answer.setScore(1);
+                        totalScore += 1;
+                    } else if ("NO".equalsIgnoreCase(dto.getAnswerText())) {
+                        answer.setScore(0);
+                    } else {
+                        answer.setScore(0);
+                        System.out.println("Warning: Invalid answer for CRAFFT questionId: " +
+                                answer.getQuestion().getQuestionId() + ", answerText: " + dto.getAnswerText());
+                    }
                 } else {
-                    // Nếu không tìm thấy score, có thể để mặc định là 0
-                    answer.setScore(0);
-                    System.out.println("Warning: No score found for questionId: " + answer.getQuestion().getQuestionId() +
-                            ", answerText: " + dto.getAnswerText());
+                    // Tính điểm cho ASSIST
+                    Integer questionScore = getOptionScore(answer.getQuestion().getQuestionId(), dto.getAnswerText());
+                    if (questionScore != null) {
+                        answer.setScore(questionScore);
+                        totalScore += questionScore;
+                    } else {
+                        answer.setScore(0);
+                        System.out.println("Warning: No score found for questionId: " +
+                                answer.getQuestion().getQuestionId() + ", answerText: " + dto.getAnswerText());
+                    }
                 }
-
             }
         }
-//không tính đc điểm một phần là do value nhập vào không khớp với giá trị trong survey_options -> tiếng anh tiếng việt
-        //hãy cập nhật lại value trong file json
+
         survey.setStatus("Completed");
         survey.setTotalScore(totalScore);
         survey.setTakenDate(LocalDate.now());
 
-        //format recommendation based on total score
-        String recommendation = generateRecommendation(totalScore);
+        // Tạo recommendation dựa trên từng loại khảo sát
+        String recommendation = generateRecommendation(totalScore, surveyType);
         survey.setRecommendation(recommendation);
 
         surveyRepository.save(survey);
@@ -108,27 +119,34 @@ public class SurveyService {
         dashboardSurveyService.createIfNotExists(survey);
     }
 
-    // Phương thức mới để lấy score từ survey_options
     private Integer getOptionScore(Integer questionId, String answerText) {
         return surveyOptionRepository.findByQuestionQuestionIdAndValue(questionId, answerText)
                 .map(SurveyOption::getScore)
-                .orElse(null); // Trả về null nếu không tìm thấy
+                .orElse(null);
     }
 
-    // Sinh khuyến nghị dựa vào tổng điểm
-    public String generateRecommendation(int totalScore) {
-        if (totalScore == 0) return "Không có nguy cơ nào. Tiếp tục duy trì lối sống lành mạnh bạn nhé.";
-        if (totalScore < 10) return "Nguy cơ thấp. Hãy duy trì lối sống lành mạnh.";
-        if (totalScore < 20) return "Nguy cơ trung bình. Nên tham khảo chuyên gia.";
-        return "Nguy cơ cao. Khuyến nghị tư vấn tâm lý ngay.";
+    public String generateRecommendation(int totalScore, String surveyType) {
+        if ("CRAFFT".equalsIgnoreCase(surveyType)) {
+            if (totalScore <= 1) {
+                return "Không có nguy cơ đáng kể. Tiếp tục duy trì lối sống lành mạnh bạn nhé.";
+            } else if (totalScore == 2) {
+                return "Nguy cơ trung bình. Nên theo dõi và tham khảo ý kiến chuyên gia nếu cần.";
+            } else {
+                return "Nguy cơ cao. Khuyến nghị tư vấn tâm lý hoặc chuyên gia ngay lập tức.";
+            }
+        } else {
+            // Recommendation cho ASSIST (giữ nguyên logic cũ)
+            if (totalScore == 0) return "Không có nguy cơ nào. Tiếp tục duy trì lối sống lành mạnh bạn nhé.";
+            if (totalScore < 10) return "Nguy cơ thấp. Hãy duy trì lối sống lành mạnh.";
+            if (totalScore < 20) return "Nguy cơ trung bình. Nên tham khảo chuyên gia.";
+            return "Nguy cơ cao. Khuyến nghị tư vấn tâm lý ngay.";
+        }
     }
 
-    // Lấy danh sách survey theo user
     public List<Survey> getSurveysByUser(User user) {
         return surveyRepository.findByUser(user);
     }
 
-    // Lấy chi tiết survey theo ID
     public Survey getSurveyById(Integer id) {
         return surveyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Survey not found"));
@@ -138,7 +156,6 @@ public class SurveyService {
         return surveyRepository.findById(id);
     }
 
-    // Chọn template phù hợp theo độ tuổi user
     public SurveyTemplate chooseTemplate(User user) {
         int age = LocalDate.now().getYear() - user.getYob();
 
@@ -161,7 +178,7 @@ public class SurveyService {
         dto.setSurveyType(survey.getSurveyType());
         dto.setStatus(survey.getStatus());
         dto.setTakenDate(survey.getTakenDate());
-        dto.setTotalScore(survey.getTotalScore() != null ? survey.getTotalScore() : 0); // Gán 0 nếu null
+        dto.setTotalScore(survey.getTotalScore() != null ? survey.getTotalScore() : 0);
         dto.setRecommendation(survey.getRecommendation());
         dto.setUser(ProfileResponse.fromEntity(survey.getUser()));
 
@@ -177,5 +194,4 @@ public class SurveyService {
 
         return dto;
     }
-
 }

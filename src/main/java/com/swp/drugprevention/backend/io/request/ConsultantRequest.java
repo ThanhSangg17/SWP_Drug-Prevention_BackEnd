@@ -1,16 +1,17 @@
-package com.swp.drugprevention.backend.io;
+package com.swp.drugprevention.backend.io.request;
+
 
 public class ConsultantRequest {
     private String name;
     private String email;
     private String specialization;
-    private String availability;
+    private boolean availability;
     private String schedule;
 
     public ConsultantRequest() {
     }
 
-    public ConsultantRequest(String name, String email, String specialization, String availability, String schedule) {
+    public ConsultantRequest(String name, String email, String specialization, boolean availability, String schedule) {
         this.name = name;
         this.email = email;
         this.specialization = specialization;
@@ -42,11 +43,11 @@ public class ConsultantRequest {
         this.specialization = specialization;
     }
 
-    public String getAvailability() {
+    public boolean isAvailability() {
         return availability;
     }
 
-    public void setAvailability(String availability) {
+    public void setAvailability(boolean availability) {
         this.availability = availability;
     }
 

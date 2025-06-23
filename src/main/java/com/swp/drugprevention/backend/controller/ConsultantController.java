@@ -1,6 +1,6 @@
 package com.swp.drugprevention.backend.controller;
 
-import com.swp.drugprevention.backend.io.ConsultantRequest;
+import com.swp.drugprevention.backend.io.request.ConsultantRequest;
 import com.swp.drugprevention.backend.model.Consultant;
 import com.swp.drugprevention.backend.service.ConsultantService;
 import org.springframework.beans.factory.annotation.Autowired;
