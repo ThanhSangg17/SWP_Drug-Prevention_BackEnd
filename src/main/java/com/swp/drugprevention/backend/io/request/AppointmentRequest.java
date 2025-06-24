@@ -1,53 +1,25 @@
 package com.swp.drugprevention.backend.io.request;
 
-import java.sql.Time;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDate;
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AppointmentRequest {
+    @NotNull(message = "Date cannot be null")
     private LocalDate date;
+    @NotNull(message = "Date cannot be null")
     private java.sql.Time time;
+    @NotBlank(message = "Location cannot be empty")
     private String status;
+    @NotBlank(message = "Location cannot be empty")
     private String location;
-
-    public AppointmentRequest() {
-    }
-
-    public AppointmentRequest(LocalDate date, Time time, String status, String location) {
-        this.date = date;
-        this.time = time;
-        this.status = status;
-        this.location = location;
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public Time getTime() {
-        return time;
-    }
-
-    public void setTime(Time time) {
-        this.time = time;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    private Integer userId;
+    private Integer consultantId;
 }
