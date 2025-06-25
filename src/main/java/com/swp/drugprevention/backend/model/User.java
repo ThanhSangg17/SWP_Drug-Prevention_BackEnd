@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.swp.drugprevention.backend.enums.AuthenticationProvider;
 import com.swp.drugprevention.backend.enums.RoleName;
@@ -84,12 +85,14 @@ public class User {
     private List<Survey> surveys;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Participation> participation;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)
