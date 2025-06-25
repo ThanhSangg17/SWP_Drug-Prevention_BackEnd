@@ -21,11 +21,10 @@ public class SurveyOption {
 
     private Integer score;
 
-    // Thêm dòng này
     private String value;
 
-    @ManyToOne
-    @JoinColumn(name = "questionId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "questionId", nullable = false)
     @JsonIgnore
     private SurveyQuestion question;
 }

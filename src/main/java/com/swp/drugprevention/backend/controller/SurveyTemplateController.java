@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp.drugprevention.backend.io.request.SubmitSurveyRequest;
 import com.swp.drugprevention.backend.io.response.SurveyResponse;
 import com.swp.drugprevention.backend.io.response.SurveyResultResponse;
+import com.swp.drugprevention.backend.io.response.SurveyTemplateResponse;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.Survey;
+import com.swp.drugprevention.backend.model.survey.SurveyRequest;
 import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
 import com.swp.drugprevention.backend.repository.UserRepository;
+import com.swp.drugprevention.backend.repository.surveyRepo.SurveyRequestRepository;
 import com.swp.drugprevention.backend.repository.surveyRepo.SurveyTemplateRepository;
 import com.swp.drugprevention.backend.service.surveyService.SurveyService;
 import com.swp.drugprevention.backend.service.surveyService.SurveyTemplateService;
@@ -24,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/survey-template")
@@ -91,5 +95,9 @@ public class SurveyTemplateController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/getOne-survey-template/{id}")
+    public SurveyTemplateResponse getOne(@PathVariable Integer id) {
+        return service.getTemplateById(id);
+    }
 
 }

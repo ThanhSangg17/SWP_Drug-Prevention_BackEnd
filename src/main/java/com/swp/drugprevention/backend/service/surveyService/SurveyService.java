@@ -4,12 +4,14 @@ import com.swp.drugprevention.backend.enums.AgeGroup;
 import com.swp.drugprevention.backend.io.request.StartSurveyRequest;
 import com.swp.drugprevention.backend.io.request.SubmitSurveyRequest;
 import com.swp.drugprevention.backend.io.response.ProfileResponse;
+import com.swp.drugprevention.backend.io.response.SurveyRequestResponse;
 import com.swp.drugprevention.backend.io.response.SurveyResponse;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.survey.*;
 import com.swp.drugprevention.backend.repository.CourseRepository;
 import com.swp.drugprevention.backend.repository.ProgramRepository;
 import com.swp.drugprevention.backend.repository.surveyRepo.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +30,42 @@ public class SurveyService {
     private final DashboardSurveyRepository dashboardSurveyRepository;
     private final DashboardSurveyService dashboardSurveyService;
     private final SurveyOptionRepository surveyOptionRepository;
+    private final SurveyRequestRepository surveyRequestRepository;
 
+    @Transactional
     public Survey startSurvey(User user, SurveyTemplate template) {
         if (template == null) {
             throw new IllegalStateException("No survey template provided.");
         }
 
+        // Kiểm tra bài khảo sát chưa hoàn thành
+        List<Survey> incompleteSurveys = surveyRepository.findByUserAndTemplateAndStatusNot(user, template, "Completed");
+        if (!incompleteSurveys.isEmpty()) {
+            throw new IllegalStateException("Bạn đã có bài khảo sát chưa hoàn thành. Vui lòng hoàn thành trước khi bắt đầu mới.");
+        }
+
+        // Kiểm tra yêu cầu được chấp thuận
+        Optional<SurveyRequest> approvedRequest = surveyRequestRepository.findByUserAndTemplateAndStatus(user, template, "APPROVED");
+
+        // Tìm bài khảo sát gần nhất
+        Optional<Survey> recentSurvey = surveyRepository.findFirstByUserAndTemplateOrderByTakenDateDesc(user, template);
+
+        // Nếu có yêu cầu được chấp thuận, xóa yêu cầu để ngăn tái sử dụng
+        if (approvedRequest.isPresent()) {
+            // Xóa yêu cầu APPROVED vì bài khảo sát gần nhất đã được xóa trong approveRequest
+            surveyRequestRepository.delete(approvedRequest.get());
+        } else {
+            // Nếu không có yêu cầu được chấp thuận, kiểm tra quy tắc 7 ngày
+            if (recentSurvey.isPresent()) {
+                Survey lastSurvey = recentSurvey.get();
+                LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+                if (!sevenDaysAgo.isAfter(lastSurvey.getTakenDate())) {
+                    throw new IllegalStateException("Bạn chỉ có thể làm lại khảo sát này sau 7 ngày kể từ lần trước.");
+                }
+            }
+        }
+
+        // Tạo bài khảo sát mới
         Survey survey = Survey.builder()
                 .user(user)
                 .template(template)
@@ -193,5 +225,25 @@ public class SurveyService {
         dto.setAnswers(answerDTOs);
 
         return dto;
+    }
+
+    public void deleteSurvey(Survey survey) {
+        surveyRepository.delete(survey);
+    }
+
+    public List<Survey> getSurveysByUserAndTemplate(User user, SurveyTemplate template) {
+        return surveyRepository.findByUserAndTemplate(user, template);
+    }
+
+    public SurveyRequestResponse toResponse(SurveyRequest request) {
+        SurveyRequestResponse response = new SurveyRequestResponse();
+        response.setId(request.getId());
+        response.setReason(request.getReason());
+        response.setRejectionReason(request.getRejectionReason());
+        response.setRequestDate(request.getRequestDate());
+        response.setStatus(request.getStatus());
+        response.setUserId(request.getUser().getUserId());
+        response.setTemplateId(request.getTemplate().getTemplateId());
+        return response;
     }
 }

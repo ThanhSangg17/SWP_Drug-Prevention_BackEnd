@@ -22,7 +22,7 @@ public class SurveyTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer templateId;
 
-    @Column(nullable = false,unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
     private String description;
@@ -46,8 +46,7 @@ public class SurveyTemplate {
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SurveyQuestion> questions = new ArrayList<>();
 
-
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL)
-    private List<Survey> surveys;
+    private List<Survey> surveys = new ArrayList<>();
 
 }

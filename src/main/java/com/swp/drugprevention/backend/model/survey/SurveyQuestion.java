@@ -3,6 +3,7 @@ package com.swp.drugprevention.backend.model.survey;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,16 +19,15 @@ public class SurveyQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer questionId;
 
-    @ManyToOne
-    @JoinColumn(name = "templateId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "templateId", nullable = false)
     private SurveyTemplate template;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String questionText;
 
-    // Có thể giữ lại nếu bạn muốn biểu diễn thang điểm tối đa
     private Integer maxScore;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SurveyOption> options;
+    private List<SurveyOption> options = new ArrayList<>();
 }
