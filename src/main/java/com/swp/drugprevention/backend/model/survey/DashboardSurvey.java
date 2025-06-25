@@ -17,12 +17,13 @@ public class DashboardSurvey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer dbSurveyId;
 
-    @OneToOne
-    @JoinColumn(name = "surveyId")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "surveyId", nullable = false, unique = true)
     private Survey survey;
 
     @Column(columnDefinition = "TEXT")
     private String recommendation;
 
+    @Column(nullable = false)
     private LocalDate createdDate;
 }

@@ -15,12 +15,12 @@ public class SurveyAnswer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer answerId;
 
-    @ManyToOne
-    @JoinColumn(name = "surveyId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "surveyId", nullable = false)
     private Survey survey;
 
-    @ManyToOne
-    @JoinColumn(name = "questionId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "questionId", nullable = false)
     private SurveyQuestion question;
 
     private Integer score;

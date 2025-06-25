@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp.drugprevention.backend.io.request.SurveyTemplateUpdateRequest;
 import com.swp.drugprevention.backend.io.response.DashboardSurveyResponse;
+import com.swp.drugprevention.backend.io.response.SurveyRequestResponse;
 import com.swp.drugprevention.backend.io.response.SurveyResponse;
 import com.swp.drugprevention.backend.io.response.SurveyTemplateResponse;
 import com.swp.drugprevention.backend.model.User;
-import com.swp.drugprevention.backend.model.survey.DashboardSurvey;
 import com.swp.drugprevention.backend.model.survey.Survey;
+import com.swp.drugprevention.backend.model.survey.SurveyRequest;
 import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
 import com.swp.drugprevention.backend.repository.UserRepository;
+import com.swp.drugprevention.backend.repository.surveyRepo.SurveyRequestRepository;
 import com.swp.drugprevention.backend.service.surveyService.DashboardSurveyService;
 import com.swp.drugprevention.backend.service.surveyService.SurveyService;
 import com.swp.drugprevention.backend.service.surveyService.SurveyTemplateService;
@@ -26,16 +28,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/dashboard")
 @RequiredArgsConstructor
-public class DashboardSurveyController {
+public class AdminDashboardSurveyController {
 
     private final DashboardSurveyService dashboardSurveyService;
     private final UserRepository userRepository;
     private final SurveyService surveyService;
     private final SurveyTemplateService service;
+    private final SurveyRequestRepository surveyRequestRepository;
 
     @PostMapping("/import-survey")
     @PreAuthorize("hasRole('ADMIN')")
@@ -99,12 +103,6 @@ public class DashboardSurveyController {
         return service.getAllTemplates();
     }
 
-    @GetMapping("/getOne-survey-template/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public SurveyTemplateResponse getOne(@PathVariable Integer id) {
-        return service.getTemplateById(id);
-    }
-
     //Trong quá trình import survey nếu lỡ có sai sót gì thì có thể sửa lại -> Cũng hơi cần thiết
     @PutMapping("/template-update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -126,5 +124,18 @@ public class DashboardSurveyController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/get-surveys-requests-resolved")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllRequestResolved() {
+        List<SurveyRequest> requests = surveyRequestRepository.findAll();
+        if (requests.isEmpty()) {
+            return ResponseEntity.ok("Hiện không có yêu cầu nào");
+        }
+        List<SurveyRequestResponse> responsesRequests = requests.stream()
+                .map(surveyService::toResponse)
+                .toList();
+        return ResponseEntity.ok(responsesRequests);
     }
 }

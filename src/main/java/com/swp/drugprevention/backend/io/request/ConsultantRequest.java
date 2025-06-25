@@ -1,8 +1,11 @@
 package com.swp.drugprevention.backend.io.request;
 
+<<<<<<< ThanhSang1
 import lombok.Getter;
 import lombok.Setter;
 
+=======
+>>>>>>> main
 
 public class ConsultantRequest {
     private String name;
@@ -61,4 +64,8 @@ public class ConsultantRequest {
     public void setSchedule(String schedule) {
         this.schedule = schedule;
     }
+<<<<<<< ThanhSang1
 }
+=======
+}
+>>>>>>> main

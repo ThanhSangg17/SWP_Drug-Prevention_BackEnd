@@ -1,9 +1,13 @@
 package com.swp.drugprevention.backend.service;
 
+<<<<<<< ThanhSang1
 import com.swp.drugprevention.backend.io.FeedbackRequest;
 import com.swp.drugprevention.backend.io.response.FeedBackConsultantResponse;
 import com.swp.drugprevention.backend.io.response.FeedBackCourseResponse;
 import com.swp.drugprevention.backend.io.response.FeedBackProgramResponse;
+=======
+import com.swp.drugprevention.backend.io.request.FeedbackRequest;
+>>>>>>> main
 import com.swp.drugprevention.backend.model.Feedback;
 import com.swp.drugprevention.backend.repository.ConsultantRepository;
 import com.swp.drugprevention.backend.repository.FeedbackRepository;
@@ -59,6 +63,7 @@ public class FeedbackService {
                 .collect(Collectors.toList());
     }
 
+<<<<<<< ThanhSang1
     public List<FeedBackProgramResponse> getAllProgramFeedbacks() {
         List<Feedback> feedbacks = feedbackRepository.findAllByProgramIsNotNull();
         return feedbacks.stream()
@@ -259,6 +264,26 @@ public class FeedbackService {
         if (!feedbackRepository.existsById(id)) {
             throw new RuntimeException("Feedback not found with ID: " + id);
         }
+=======
+    public Feedback saveFeedback(FeedbackRequest request) {
+        Feedback feed = new Feedback();
+        feed.setContent(request.getContent());
+        return feedbackRepository.save(feed);
+    }
+
+    public Feedback getFeedbackById(Integer id) {
+        return feedbackRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Feedback not found"));
+    }
+
+    public Feedback updateFeedback(Integer id, FeedbackRequest request) {
+        Feedback feed = getFeedbackById(id);
+        feed.setContent(request.getContent());
+        return feedbackRepository.save(feed);
+    }
+
+    public void deleteFeedback(Integer id) {
+>>>>>>> main
         feedbackRepository.deleteById(id);
     }
 }

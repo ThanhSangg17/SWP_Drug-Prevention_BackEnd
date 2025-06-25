@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,34 +24,39 @@ public class Survey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer surveyId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UserID", nullable = false)
     @JsonBackReference
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "templateId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "templateId", nullable = false)
     private SurveyTemplate template;
 
     private String surveyType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ProgramID")
     private Program program;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CourseID")
     private Course course;
 
+    @Column(nullable = false)
     private LocalDate takenDate;
 
     private Integer totalScore;
 
-    private String status; // Completed, In Progress
+    @Column(nullable = false)
+    private String status; // Sử dụng enum để kiểm soát giá trị (Completed, InProgress)
 
     private String recommendation;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<SurveyAnswer> answers;
+    private List<SurveyAnswer> answers = new ArrayList<>();
+
+    @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private DashboardSurvey dashboardSurvey;
 }
