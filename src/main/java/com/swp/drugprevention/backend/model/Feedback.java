@@ -1,5 +1,7 @@
 package com.swp.drugprevention.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,10 +24,12 @@ public class Feedback {
 
     @ManyToOne
     @JoinColumn(name = "UserID", referencedColumnName = "UserID")
+    @JsonManagedReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "ProgramID", referencedColumnName = "ProgramID")
+    @JsonManagedReference
     private Program program;
 
     @ManyToOne

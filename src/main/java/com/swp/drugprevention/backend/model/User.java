@@ -92,6 +92,7 @@ public class User {
     private List<Participation> participation;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)
