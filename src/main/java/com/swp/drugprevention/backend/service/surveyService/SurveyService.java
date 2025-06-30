@@ -98,6 +98,9 @@ public class SurveyService {
     }
 
     public void submitSurvey(Survey survey, SubmitSurveyRequest request) {
+        if ("Completed".equalsIgnoreCase(survey.getStatus())) {
+            throw new IllegalStateException("Bài khảo sát đã được hoàn thành trước đó.");
+        }
         Map<Integer, SubmitSurveyRequest.AnswerDTO> answerMap = new HashMap<>();
         for (SubmitSurveyRequest.AnswerDTO dto : request.getAnswers()) {
             answerMap.put(dto.getQuestionId(), dto);
@@ -237,6 +240,7 @@ public class SurveyService {
 
     public SurveyRequestResponse toResponse(SurveyRequest request) {
         SurveyRequestResponse response = new SurveyRequestResponse();
+        response.setName(request.getTemplate().getName());
         response.setId(request.getId());
         response.setReason(request.getReason());
         response.setRejectionReason(request.getRejectionReason());

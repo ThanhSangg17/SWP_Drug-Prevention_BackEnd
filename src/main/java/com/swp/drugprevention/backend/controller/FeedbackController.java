@@ -1,14 +1,9 @@
 package com.swp.drugprevention.backend.controller;
 
-<<<<<<< ThanhSang1
-import com.swp.drugprevention.backend.io.FeedbackRequest;
+import com.swp.drugprevention.backend.io.request.FeedbackRequest;
 import com.swp.drugprevention.backend.io.response.FeedBackConsultantResponse;
 import com.swp.drugprevention.backend.io.response.FeedBackCourseResponse;
 import com.swp.drugprevention.backend.io.response.FeedBackProgramResponse;
-=======
-import com.swp.drugprevention.backend.io.request.FeedbackRequest;
-import com.swp.drugprevention.backend.model.Feedback;
->>>>>>> main
 import com.swp.drugprevention.backend.service.FeedbackService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +37,6 @@ public class FeedbackController {
         }
     }
 
-<<<<<<< ThanhSang1
     @PostMapping("/course/create")
     public ResponseEntity<?> createCourseFeedback(@Valid @RequestBody FeedbackRequest feedbackRequest) {
         try {
@@ -212,26 +206,5 @@ public class FeedbackController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error deleting feedback: " + e.getMessage()));
         }
-=======
-    @GetMapping(value = "/getAllFeedback")
-    List<Feedback> getFeedback(){
-        return service.getAllFeedbacks();
-    }
-
-    @GetMapping(value = "/getById/{feedbackId}")
-    Feedback getFeedbackById(@PathVariable("feedbackId") Integer id){
-        return service.getFeedbackById(id);
-    }
-
-    @PutMapping("/update/{feedbackId}")
-    Feedback updateFeedback(@PathVariable("feedbackId") Integer id, @RequestBody FeedbackRequest request){
-        return service.updateFeedback(id, request);
-    }
-
-    @DeleteMapping("/delete/{feedbackId}")
-    String deleteFeedback(@PathVariable("feedbackId") Integer id){
-        service.deleteFeedback(id);
-        return "Feedback has been deleted";
->>>>>>> main
     }
 }

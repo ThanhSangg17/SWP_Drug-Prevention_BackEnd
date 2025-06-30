@@ -8,6 +8,7 @@ import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.AppointmentRepository;
 import com.swp.drugprevention.backend.repository.ConsultantRepository;
 import com.swp.drugprevention.backend.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class AppointmentService {
         List<Appointment> appointments = appointmentRepository.findAll();
         return appointments.stream()
                 .map(appointment -> new AppointmentResponse(
+                        appointment.getAppointmentId(),
                         appointment.getDate(),
                         appointment.getTime(),
                         appointment.getStatus(),
@@ -36,12 +38,9 @@ public class AppointmentService {
                 ))
                 .collect(Collectors.toList());
     }
-    public AppointmentResponse saveAppointment(AppointmentRequest request) {
+    public AppointmentResponse saveAppointment(@Valid AppointmentRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request cannot be null");
-        }
-        if (request.getTime() == null || request.getDate() == null || request.getLocation() == null || request.getStatus() == null) {
-            throw new IllegalArgumentException("Required fields cannot be null");
         }
         Appointment appointment = new Appointment();
         appointment.setTime(request.getTime());
@@ -57,6 +56,7 @@ public class AppointmentService {
         appointment.setConsultant(consultant);
         Appointment savedAppointment = appointmentRepository.save(appointment);
         return new AppointmentResponse(
+                savedAppointment.getAppointmentId(),
                 savedAppointment.getDate(),
                 savedAppointment.getTime(),
                 savedAppointment.getStatus(),
@@ -86,6 +86,7 @@ public class AppointmentService {
 
             Appointment savedAppointment = appointmentRepository.save(appointment);
             return new AppointmentResponse(
+                    savedAppointment.getAppointmentId(),
                     savedAppointment.getDate(),
                     savedAppointment.getTime(),
                     savedAppointment.getStatus(),

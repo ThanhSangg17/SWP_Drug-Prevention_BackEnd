@@ -1,6 +1,5 @@
 package com.swp.drugprevention.backend.io.response;
 
-import com.swp.drugprevention.backend.model.survey.SurveyTemplate;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -13,6 +12,7 @@ public class SurveyRequestResponse {
     private Long id;
     private Integer userId;
     private Integer templateId;
+    private String name;
     private String reason;
     private LocalDateTime requestDate;
     private String status;

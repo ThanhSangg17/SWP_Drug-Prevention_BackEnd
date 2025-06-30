@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 public class ProfileRequest {
@@ -20,6 +22,7 @@ public class ProfileRequest {
 
     @NotNull(message = "Year of Birth is required") // Thay @NotBlank bằng @NotNull cho Integer
     @Min(value = 1900, message = "Year of Birth must be after 1900")
+    @Max(value = 2030, message = "Year of Birth not be in the future")
     private Integer yob;
 
     @NotBlank(message = "Gender is not blank")

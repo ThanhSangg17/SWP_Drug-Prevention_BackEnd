@@ -62,6 +62,8 @@ public class User {
     @Column(name = "auth_provider")
     private AuthenticationProvider authProvider;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY, optional = true)
+    private Consultant consultant;
 
 
     public User (String fullName, String email, String password) {

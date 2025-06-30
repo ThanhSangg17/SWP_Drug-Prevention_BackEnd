@@ -4,10 +4,15 @@ import com.swp.drugprevention.backend.enums.AuthenticationProvider;
 import com.swp.drugprevention.backend.enums.RoleName;
 import com.swp.drugprevention.backend.io.request.PendingRegistration;
 import com.swp.drugprevention.backend.io.request.ProfileRequest;
+import com.swp.drugprevention.backend.io.request.UpdateUserProfileRequest;
+import com.swp.drugprevention.backend.io.response.ConsultantResponse;
 import com.swp.drugprevention.backend.io.response.ProfileResponse;
+import com.swp.drugprevention.backend.model.Consultant;
 import com.swp.drugprevention.backend.model.User;
+import com.swp.drugprevention.backend.repository.ConsultantRepository;
 import com.swp.drugprevention.backend.repository.ProfileService;
 import com.swp.drugprevention.backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,6 +43,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final EmailService emailService;
 
+    private final ConsultantRepository consultantRepository;
 
 
     @Override
@@ -61,6 +67,14 @@ public class ProfileServiceImpl implements ProfileService {
         /*newProfile = userRepository.save(newProfile);
         return convertToProfileResponse(newProfile);*/
 
+    }
+
+    public void updateUserProfile(User user, UpdateUserProfileRequest request) {
+        if (request.getFullName() != null && !request.getFullName().isEmpty()) user.setFullName(request.getFullName());
+        if (request.getYob() != null) user.setYob(request.getYob());
+        if (request.getGender() != null && !request.getGender().isEmpty()) user.setGender(request.getGender());
+        if (request.getPhone() != null && !request.getPhone().isEmpty()) user.setPhone(request.getPhone());
+        userRepository.save(user);
     }
 
     @Override
@@ -174,9 +188,11 @@ public class ProfileServiceImpl implements ProfileService {
                 .gender(newProfile.getGender())
                 .phone(newProfile.getPhone())
                 .roleName(newProfile.getRoleName())
-                .authenticationProvider(newProfile.getAuthProvider())
+                //.authenticationProvider(newProfile.getAuthProvider())
                 .build();
     }
+
+
 
     private User convertToUserEntity(ProfileRequest request) {
         return User.builder()
@@ -227,7 +243,23 @@ public class ProfileServiceImpl implements ProfileService {
                 .collect(Collectors.toList());
     }
 
-}
+    @Override
+    @Transactional
+    public void deleteUserById(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+        if (user.getRoleName() == RoleName.CONSULTANT) {
+            Consultant consultant = consultantRepository.findByUser(user).orElse(null);
+            if (consultant != null) {
+                consultantRepository.delete(consultant);
+            }
+        }
+        userRepository.delete(user);
+    }
+    }
+
+
 
 //những hàm đã được sửa bên trên
 //không cần nữa bởi vì hàm này verify khi đã đăng nhập, điều này không cần thiết nên xóa đi

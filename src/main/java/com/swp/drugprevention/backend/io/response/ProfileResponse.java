@@ -22,10 +22,6 @@ public class ProfileResponse {
     @Email(message = "Email is not formatted correctly!!")
     private String email;
 
-/*    @NotBlank(message = "Password is not blank")
-    @Size(min = 8, message = "Password must be more than 8 characters") không nên gửi password lên client
-    private String password;*/
-
     @NotNull(message = "Year of Birth is required") // Thay @NotBlank bằng @NotNull cho Integer
     @Min(value = 1900, message = "Year of Birth must be after 1900")
     private Integer yob;
@@ -39,7 +35,7 @@ public class ProfileResponse {
     private String phone;
 
     private RoleName roleName;
-    private AuthenticationProvider authenticationProvider;
+    //private AuthenticationProvider authenticationProvider;
 
     public static ProfileResponse fromEntity(User user) {
         return ProfileResponse.builder()
@@ -49,7 +45,7 @@ public class ProfileResponse {
                 .gender(user.getGender())
                 .yob(user.getYob())
                 .roleName(user.getRoleName())
-                .authenticationProvider(user.getAuthProvider())
+                //.authenticationProvider(user.getAuthProvider())
                 .build();
     }
 }

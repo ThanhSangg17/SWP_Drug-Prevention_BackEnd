@@ -16,7 +16,7 @@ public class AppointmentRequest {
     private LocalDate date;
     @NotNull(message = "Date cannot be null")
     private java.sql.Time time;
-    @NotBlank(message = "Location cannot be empty")
+    @NotBlank(message = "Status cannot be empty")
     private String status;
     @NotBlank(message = "Location cannot be empty")
     private String location;
