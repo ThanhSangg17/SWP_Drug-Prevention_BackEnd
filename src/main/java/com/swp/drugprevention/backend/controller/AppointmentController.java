@@ -1,4 +1,5 @@
 package com.swp.drugprevention.backend.controller;
+import com.swp.drugprevention.backend.io.response.ProfileResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,9 +8,11 @@ import com.swp.drugprevention.backend.io.response.AppointmentResponse;
 import com.swp.drugprevention.backend.model.Appointment;
 import com.swp.drugprevention.backend.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -47,4 +50,15 @@ public class AppointmentController {
         service.deleteAppointment(id);
         return ResponseEntity.status(HttpStatus.OK).body("Đã xóa thành công !!!");
     }
+
+    @GetMapping("/myAppointment")
+    public ResponseEntity<Object> getMyAppointment(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        AppointmentResponse appointment = service.getMyAppointment(email);
+        if (appointment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Bạn chưa có lịch hẹn nào"));
+        }
+        return ResponseEntity.ok(appointment);
+    }
+
 }

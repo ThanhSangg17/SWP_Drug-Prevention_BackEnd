@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -14,8 +16,9 @@ import java.time.LocalDate;
 public class AppointmentRequest {
     @NotNull(message = "Date cannot be null")
     private LocalDate date;
-    @NotNull(message = "Date cannot be null")
-    private java.sql.Time time;
+    @NotNull(message = "Start time cannot be null")
+    private LocalTime startTime;
+    private LocalTime endTime;
     @NotBlank(message = "Status cannot be empty")
     private String status;
     @NotBlank(message = "Location cannot be empty")
