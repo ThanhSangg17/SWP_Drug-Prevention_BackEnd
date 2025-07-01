@@ -33,7 +33,7 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "ConsultantID", referencedColumnName = "ConsultantID")
-    @JsonBackReference
+    //@JsonBackReference
     private Consultant consultant;
 
     @Column(name = "Date")
@@ -54,7 +54,7 @@ public class Appointment {
     private String location;
 
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    //@JsonManagedReference
     private List<Payment> payments;
 
 }

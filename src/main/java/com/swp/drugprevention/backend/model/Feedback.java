@@ -24,12 +24,12 @@ public class Feedback {
 
     @ManyToOne
     @JoinColumn(name = "UserID", referencedColumnName = "UserID")
-    @JsonManagedReference
+    //@JsonManagedReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "ProgramID", referencedColumnName = "ProgramID")
-    @JsonManagedReference
+    //@JsonManagedReference
     private Program program;
 
     @ManyToOne

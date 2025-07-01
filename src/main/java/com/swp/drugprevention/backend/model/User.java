@@ -87,14 +87,14 @@ public class User {
     private List<Survey> surveys;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
+    //@JsonBackReference
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Participation> participation;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
+    //@JsonBackReference
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)

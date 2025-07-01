@@ -1,6 +1,7 @@
 package com.swp.drugprevention.backend.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp.drugprevention.backend.io.request.SurveyTemplateUpdateRequest;
 import com.swp.drugprevention.backend.io.response.DashboardSurveyResponse;
@@ -46,11 +47,23 @@ public class AdminDashboardSurveyController {
     public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {
         try {
             ObjectMapper mapper = new ObjectMapper();
+            // Bỏ qua các trường không tồn tại trong entity
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            // Cho phép giá trị null cho các trường không bắt buộc
+            mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
             List<SurveyTemplate> templates = mapper.readValue(
                     file.getInputStream(), new TypeReference<List<SurveyTemplate>>() {}
             );
 
             for (SurveyTemplate template : templates) {
+                // Kiểm tra các trường bắt buộc
+                if (template.getName() == null || template.getSurveyType() == null ||
+                        template.getAgeGroup() == null || template.getGenderGroup() == null ||
+                        template.getRiskLevel() == null) {
+                    return ResponseEntity.badRequest().body("Missing required fields in template: " + template.getName());
+                }
+
                 if (template.getQuestions() != null) {
                     for (var q : template.getQuestions()) {
                         q.setTemplate(template);
@@ -70,6 +83,9 @@ public class AdminDashboardSurveyController {
             return ResponseEntity.ok().body("Imported " + saved.size() + " survey templates successfully.");
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Import failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error: " + e.getMessage());
         }
     }
 
