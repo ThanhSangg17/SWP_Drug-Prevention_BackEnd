@@ -54,7 +54,7 @@ public class AppointmentService {
         Consultant consultant = consultantRepository.findById(request.getConsultantId())
                 .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + request.getConsultantId()));
 
-        // 🔎 Kiểm tra xem có appointment nào trùng hoặc cách dưới 30 phút
+        // Kiểm tra xem có appointment nào trùng hoặc cách dưới 30 phút
         List<Appointment> existingAppointments = appointmentRepository.findByConsultantAndDate(consultant, date);
         for (Appointment appt : existingAppointments) {
             LocalTime existingStart = appt.getStartTime();
@@ -66,7 +66,7 @@ public class AppointmentService {
             }
         }
 
-        // ✅ Tạo appointment
+        // Tạo appointment
         Appointment appointment = new Appointment();
         appointment.setDate(date);
         appointment.setStartTime(startTime);

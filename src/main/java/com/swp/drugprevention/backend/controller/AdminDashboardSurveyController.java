@@ -114,7 +114,6 @@ public class AdminDashboardSurveyController {
     }
 
     @GetMapping("/getAll-templates")
-    @PreAuthorize("hasRole('ADMIN')")
     public List<SurveyTemplateResponse> getAll() {
         return service.getAllTemplates();
     }
