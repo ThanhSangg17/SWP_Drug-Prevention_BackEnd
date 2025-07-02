@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.io.response;
 
+import com.swp.drugprevention.backend.enums.ConsultationStatus;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public class AppointmentResponse {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
-    private String status;
+    private ConsultationStatus status;
     private String location;
     private Integer userId;
     private Integer consultantId;

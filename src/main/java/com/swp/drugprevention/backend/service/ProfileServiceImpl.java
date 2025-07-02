@@ -182,6 +182,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     private ProfileResponse convertToProfileResponse(User newProfile) {
         return ProfileResponse.builder()
+                .userId(newProfile.getUserId())
                 .fullName(newProfile.getFullName())
                 .email(newProfile.getEmail())
                 .yob(newProfile.getYob())

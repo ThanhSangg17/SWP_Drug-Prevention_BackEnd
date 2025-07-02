@@ -3,6 +3,7 @@ package com.swp.drugprevention.backend.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.swp.drugprevention.backend.enums.ConsultationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,7 +49,8 @@ public class Appointment {
     private LocalTime endTime;
 
     @Column(name = "Status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ConsultationStatus status;
 
     @Column(name = "Location", length = 255)
     private String location;

@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ProfileResponse {
+
+    private Integer userId;
+
     @NotBlank(message = "Full Name is not blank")
     private String fullName;
 
