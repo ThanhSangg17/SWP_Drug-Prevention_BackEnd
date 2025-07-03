@@ -286,4 +286,46 @@ public class FeedbackService {
 >>>>>>> main
         feedbackRepository.deleteById(id);
     }
+
+    public List<Object> getFeedbacksByUserId(Integer userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+
+        // Lấy tất cả feedback liên quan đến userId
+        List<Feedback> feedbacks = feedbackRepository.findAllByUser_UserId(userId);
+
+        // Chuyển đổi feedback thành các response tương ứng dựa trên loại
+        return feedbacks.stream().map(feedback -> {
+            if (feedback.getConsultant() != null) {
+                return new FeedBackConsultantResponse(
+                        feedback.getFeedbackId(),
+                        feedback.getUser() != null ? feedback.getUser().getUserId() : null,
+                        feedback.getConsultant() != null ? feedback.getConsultant().getConsultantId() : null,
+                        feedback.getDate(),
+                        feedback.getContent()
+                );
+            } else if (feedback.getCourse() != null) {
+                return new FeedBackCourseResponse(
+                        feedback.getFeedbackId(),
+                        feedback.getUser() != null ? feedback.getUser().getUserId() : null,
+                        feedback.getCourse() != null ? feedback.getCourse().getCourseId() : null,
+                        feedback.getDate(),
+                        feedback.getContent()
+                );
+            } else if (feedback.getProgram() != null) {
+                return new FeedBackProgramResponse(
+                        feedback.getFeedbackId(),
+                        feedback.getUser() != null ? feedback.getUser().getUserId() : null,
+                        feedback.getProgram() != null ? feedback.getProgram().getProgramId() : null,
+                        feedback.getDate(),
+                        feedback.getContent()
+                );
+            }
+            return null; // Trường hợp không có loại nào (nên tránh)
+        }).filter(response -> response != null).collect(Collectors.toList());
+    }
 }

@@ -25,6 +25,11 @@ public class FeedbackController {
     @Autowired
     FeedbackService service;
 
+    @GetMapping("/user/{userId}")
+    public List<Object> getFeedbacksByUserId(@PathVariable Integer userId) {
+        return service.getFeedbacksByUserId(userId);
+    }
+
     @PostMapping("/consultant/create")
     public ResponseEntity<?> createConsultantFeedback(@Valid @RequestBody FeedbackRequest feedbackRequest) {
         try {
