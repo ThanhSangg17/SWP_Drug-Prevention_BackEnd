@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
+    List<Feedback> findAllByUser_UserId(Integer userId);
     List<Feedback> findAllByConsultantIsNotNull();
     List<Feedback> findAllByCourseIsNotNull();
     List<Feedback> findAllByProgramIsNotNull();
