@@ -23,4 +23,6 @@ public interface ProfileService {
     User loginRegisterByGoogleOAuth2(OAuth2AuthenticationToken oAuth2AuthenticationToken);
 
     List<ProfileResponse> getAllUserProfile();
+
+    void deleteUserById(Integer userId);
 }

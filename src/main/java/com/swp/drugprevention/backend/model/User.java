@@ -62,6 +62,8 @@ public class User {
     @Column(name = "auth_provider")
     private AuthenticationProvider authProvider;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY, optional = true)
+    private Consultant consultant;
 
 
     public User (String fullName, String email, String password) {
@@ -85,14 +87,14 @@ public class User {
     private List<Survey> surveys;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
+    //@JsonBackReference
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Participation> participation;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
+    //@JsonBackReference
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)

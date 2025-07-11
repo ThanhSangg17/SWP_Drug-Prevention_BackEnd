@@ -26,11 +26,14 @@ public class Consultant {
 
     @Column(name = "Email", nullable = false, unique = true, length = 100)
     private String email;
+    @OneToOne
+    @JoinColumn(name = "UserID", referencedColumnName = "UserID", nullable = false, unique = true)
+    private User user;
 
     @Column(name = "Specialization", length = 255)
     private String specialization;
 
-    @Column(name = "Availability",nullable = false)
+    @Column(name = "Availability")
     private boolean availability;
 
     @Column(name = "Schedule", length = 255)
@@ -44,4 +47,10 @@ public class Consultant {
 
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
     private List<Program> programs;
+
+    @Column(name = "Phone", length = 20)
+    private String phone;
+
+    @Column(name = "YOB")
+    private Integer yob;
 }
