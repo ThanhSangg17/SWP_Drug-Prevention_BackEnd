@@ -13,7 +13,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Enrollment {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // cần dòng này!
     @Column(name = "EnrollmentID")
     private Integer enrollmentId;
 
@@ -22,9 +24,14 @@ public class Enrollment {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "CourseID", referencedColumnName = "CourseID")
-    private Course course;
+    @JoinColumn(name = "OfflineCourseID", referencedColumnName = "id") // 👈 chú ý tên cột ID là "id"
+    private OfflineCourse offlineCourse;
 
     @Column(name = "EnrollDate")
     private java.sql.Date enrollDate;
+
+    @Column(name = "is_present")
+    private Boolean isPresent = false;
+
 }
+

@@ -1,13 +1,10 @@
 package com.swp.drugprevention.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
-
 
 @Entity
 @Table(name = "Consultants")
@@ -16,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Consultant {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ConsultantID")
@@ -26,8 +24,10 @@ public class Consultant {
 
     @Column(name = "Email", nullable = false, unique = true, length = 100)
     private String email;
+
     @OneToOne
     @JoinColumn(name = "UserID", referencedColumnName = "UserID", nullable = false, unique = true)
+    @JsonIgnore // 👈 tránh vòng lặp nếu User lại có Consultant
     private User user;
 
     @Column(name = "Specialization", length = 255)
@@ -40,13 +40,20 @@ public class Consultant {
     private String schedule;
 
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Course> courses;
 
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Program> programs;
+
+    @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<OfflineCourse> offlineCourses; // 👈 Thêm dòng này nếu anh có
 
     @Column(name = "Phone", length = 20)
     private String phone;

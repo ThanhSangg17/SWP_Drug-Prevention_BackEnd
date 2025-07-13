@@ -103,5 +103,14 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Payment> payments;
 
+    @ManyToMany
+    @JoinTable(
+            name = "User_OfflineCourse",
+            joinColumns = @JoinColumn(name = "UserID"),
+            inverseJoinColumns = @JoinColumn(name = "OfflineCourseID")
+    )
+    private List<OfflineCourse> registeredCourses;
+
+
 
 }

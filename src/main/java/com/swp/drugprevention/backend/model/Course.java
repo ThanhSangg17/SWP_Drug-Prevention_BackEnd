@@ -50,8 +50,6 @@ public class Course {
     @JoinColumn(name = "Teacher", referencedColumnName = "ConsultantID")
     private Consultant teacher;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    private List<Enrollment> enrollments;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Feedback> feedbacks;
