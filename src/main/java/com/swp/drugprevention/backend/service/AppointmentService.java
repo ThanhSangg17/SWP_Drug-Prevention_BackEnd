@@ -30,6 +30,7 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepository;
     @Autowired
     private ConsultantRepository consultantRepository;
+    private EmailService emailService;
 
     public List<AppointmentResponse> getAllAppointments() {
         List<Appointment> appointments = appointmentRepository.findAll();
@@ -253,6 +254,23 @@ public class AppointmentService {
                 updated.getUser() != null ? updated.getUser().getUserId() : null,
                 updated.getConsultant() != null ? updated.getConsultant().getConsultantId() : null
         );
+    }
+    @Scheduled(fixedRate = 3600000) // Chạy mỗi 1 giờ
+    public void sendAppointmentReminders() {
+        List<Appointment> upcomingAppointments = appointmentRepository.findByStatus(ConsultationStatus.Pending);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Appointment appointment : upcomingAppointments) {
+            LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
+            LocalDateTime reminderTime = appointmentDateTime.minusHours(12);
+
+            if (now.isAfter(reminderTime) && now.isBefore(reminderTime.plusMinutes(5))) {
+                String to = appointment.getUser().getEmail();
+                String name = appointment.getUser().getFullName(); // thay bằng đúng field
+                emailService.sendAppointmentReminder(to, name, appointmentDateTime);
+            }
+        }
     }
 
 }

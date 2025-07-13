@@ -5,8 +5,11 @@ import com.swp.drugprevention.backend.model.Appointment;
 import com.swp.drugprevention.backend.model.Consultant;
 import com.swp.drugprevention.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
@@ -19,5 +22,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<Appointment> findByStatusNot(ConsultationStatus status);
     List<Appointment> findByUserOrderByDateAscStartTimeAsc(User user);
     List<Appointment> findByConsultant(Consultant consultant);
-
+    @Query("SELECT a FROM Appointment a WHERE " +
+            "FUNCTION('TIMESTAMP', a.date, a.startTime) BETWEEN :start AND :end " +
+            "AND a.status = 'Pending'")
+    List<Appointment> findByDateTimeBetween(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+    List<Appointment> findByStatus(ConsultationStatus status);
 }

@@ -6,6 +6,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -14,15 +17,6 @@ public class EmailService {
 
     @Value("${spring.mail.properties.mail.smtp.from}")
     private String fromEmail;
-
-    /*public void sendWelcomeEmail(String toEmail, String name) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
-        message.setSubject("Welcome to Drug-Prevention Platform");
-        message.setText("Hello"+name+",\n\nThanks for registering with us!\n\nRegards, \nAnti-Drug Team");
-        mailSender.send(message);
-    }*/
 
     public void sendResetOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -39,6 +33,27 @@ public class EmailService {
         message.setTo(toEmail);
         message.setSubject("Account Verification OTP");
         message.setText("Your OTP is "+otp+". Verify your account using this OTP");
+        mailSender.send(message);
+    }
+    public void sendAppointmentReminder(String to, String userName, LocalDateTime appointmentTime) {
+        String subject = "Nhắc lịch hẹn tư vấn";
+        String body = String.format("""
+                Mến chào %s,
+                
+                Đây là email nhắc nhở bạn về cuộc hẹn sắp tới vào lúc %s.
+                
+                Vui lòng chuẩn bị và đến đúng giờ. Nếu bạn không thể tham gia, vui lòng hủy trước thời gian hẹn.
+
+                Trân trọng,
+                Hệ thống dự án tư vấn phòng chống ma túy !!!.
+                """, userName, appointmentTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(body);
+        message.setFrom(fromEmail);
+
         mailSender.send(message);
     }
 }
