@@ -157,7 +157,7 @@ public class AppointmentService {
             appointmentRepository.deleteById(id);
         }
 
-    public AppointmentResponse getMyAppointment(String email) {
+    public List<AppointmentResponse> getMyAppointments(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
@@ -166,18 +166,18 @@ public class AppointmentService {
         List<Appointment> appointments = appointmentRepository
                 .findByUserAndDateGreaterThanEqualOrderByDateAscStartTimeAsc(user, today);
 
-
-        Appointment appointment = appointments.getFirst();
-        return new AppointmentResponse(
-                appointment.getAppointmentId(),
-                appointment.getDate(),
-                appointment.getStartTime(),
-                appointment.getEndTime(),
-                appointment.getStatus(),
-                appointment.getLocation(),
-                user.getUserId(),
-                appointment.getConsultant() != null ? appointment.getConsultant().getConsultantId() : null
-        );
+        return appointments.stream()
+                .map(appointment -> new AppointmentResponse(
+                        appointment.getAppointmentId(),
+                        appointment.getDate(),
+                        appointment.getStartTime(),
+                        appointment.getEndTime(),
+                        appointment.getStatus(),
+                        appointment.getLocation(),
+                        user.getUserId(),
+                        appointment.getConsultant() != null ? appointment.getConsultant().getConsultantId() : null
+                ))
+                .collect(Collectors.toList());
     }
 
     public AppointmentResponse cancelAppointment(Integer appointmentId) {
@@ -212,4 +212,47 @@ public class AppointmentService {
             }
         }
     }
+    public List<AppointmentResponse> getAppointmentsByConsultant(Integer consultantId) {
+        Consultant consultant = consultantRepository.findById(consultantId)
+                .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + consultantId));
+
+        List<Appointment> appointments = appointmentRepository.findByConsultant(consultant);
+
+        return appointments.stream()
+                .map(appointment -> new AppointmentResponse(
+                        appointment.getAppointmentId(),
+                        appointment.getDate(),
+                        appointment.getStartTime(),
+                        appointment.getEndTime(),
+                        appointment.getStatus(),
+                        appointment.getLocation(),
+                        appointment.getUser() != null ? appointment.getUser().getUserId() : null,
+                        consultant.getConsultantId()
+                ))
+                .collect(Collectors.toList());
+    }
+    public AppointmentResponse setStatus(Integer appointmentId, ConsultationStatus newStatus) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
+
+        // Chỉ update nếu status hợp lệ (tuỳ luật lệ của bạn)
+        if (appointment.getStatus() == ConsultationStatus.Cancel) {
+            throw new IllegalStateException("Cuộc hẹn đã bị hủy, không thể thay đổi trạng thái.");
+        }
+
+        appointment.setStatus(newStatus);
+        Appointment updated = appointmentRepository.save(appointment);
+
+        return new AppointmentResponse(
+                updated.getAppointmentId(),
+                updated.getDate(),
+                updated.getStartTime(),
+                updated.getEndTime(),
+                updated.getStatus(),
+                updated.getLocation(),
+                updated.getUser() != null ? updated.getUser().getUserId() : null,
+                updated.getConsultant() != null ? updated.getConsultant().getConsultantId() : null
+        );
+    }
+
 }

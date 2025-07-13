@@ -17,4 +17,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     // Quy tắt là: findBy + TênTrường + TênPhươngThức
     // Ví dụ: findByUserUserIdAndDate sẽ tạo truy vấn tìm kiếm theo UserID và Date
     List<Appointment> findByStatusNot(ConsultationStatus status);
+    List<Appointment> findByUserOrderByDateAscStartTimeAsc(User user);
+    List<Appointment> findByConsultant(Consultant consultant);
+
 }

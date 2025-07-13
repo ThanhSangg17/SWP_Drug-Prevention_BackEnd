@@ -1,4 +1,5 @@
 package com.swp.drugprevention.backend.controller;
+import com.swp.drugprevention.backend.enums.ConsultationStatus;
 import com.swp.drugprevention.backend.io.response.ProfileResponse;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,6 +25,21 @@ import java.util.Map;
 public class AppointmentController {
     @Autowired
     AppointmentService service;
+
+    @PutMapping("/consultant/update-status/{appointmentId}")
+//    @PreAuthorize("hasRole('CONSULTANT')")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer appointmentId,
+                                          @RequestParam ConsultationStatus status) {
+        AppointmentResponse response = service.setStatus(appointmentId, status);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/consultant/{consultantId}")
+//    @PreAuthorize("hasRole('STAFF') or hasRole('CONSULTANT')")
+    public ResponseEntity<List<AppointmentResponse>> getAppointmentsByConsultant(@PathVariable Integer consultantId) {
+        List<AppointmentResponse> list = service.getAppointmentsByConsultant(consultantId);
+        return ResponseEntity.ok(list);
+    }
 
     @PostMapping(value = "/create")
     public ResponseEntity<AppointmentResponse> createAppointment(@Valid @RequestBody AppointmentRequest request) {
@@ -69,13 +85,15 @@ public class AppointmentController {
     }
 
     @GetMapping("/myAppointment")
-    public ResponseEntity<Object> getMyAppointment(@CurrentSecurityContext(expression = "authentication?.name") String email) {
-        AppointmentResponse appointment = service.getMyAppointment(email);
-        if (appointment == null) {
+    public ResponseEntity<?> getMyAppointments(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        List<AppointmentResponse> appointments = service.getMyAppointments(email);
+
+        if (appointments.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", "Bạn chưa có lịch hẹn nào"));
         }
-        return ResponseEntity.ok(appointment);
+
+        return ResponseEntity.ok(appointments);
     }
 
     //Hủy lịch hẹn dành cho staff

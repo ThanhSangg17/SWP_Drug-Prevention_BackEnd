@@ -3,6 +3,7 @@ package com.swp.drugprevention.backend.service;
 import com.swp.drugprevention.backend.io.request.UpdateConsultantProfileRequest;
 import com.swp.drugprevention.backend.io.response.ConsultantResponse;
 import com.swp.drugprevention.backend.io.response.ConsultantUpdateResponse;
+import com.swp.drugprevention.backend.model.Appointment;
 import com.swp.drugprevention.backend.model.Consultant;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.repository.ConsultantRepository;
