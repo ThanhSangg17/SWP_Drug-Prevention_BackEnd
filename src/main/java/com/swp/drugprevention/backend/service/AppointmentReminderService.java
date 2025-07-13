@@ -16,7 +16,7 @@ public class AppointmentReminderService {
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
 
-    @Scheduled(fixedRate = 10 * 60 * 1000) // mỗi 10 phút
+    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60.000 ms)
     public void sendReminders() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime target = now.plusHours(12);

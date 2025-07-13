@@ -25,10 +25,6 @@ public class Payment {
     @JoinColumn(name = "CourseID", referencedColumnName = "CourseID")
     private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "AppointmentID", referencedColumnName = "AppointmentID")
-    private Appointment appointment;
-
     @Column(name = "Amount", nullable = false)
     private Double amount;
 

@@ -255,7 +255,7 @@ public class AppointmentService {
                 updated.getConsultant() != null ? updated.getConsultant().getConsultantId() : null
         );
     }
-    @Scheduled(fixedRate = 3600000) // Chạy mỗi 1 giờ
+    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60.000 ms)
     public void sendAppointmentReminders() {
         List<Appointment> upcomingAppointments = appointmentRepository.findByStatus(ConsultationStatus.Pending);
 

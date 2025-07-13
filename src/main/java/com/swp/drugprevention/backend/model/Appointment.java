@@ -55,8 +55,5 @@ public class Appointment {
     @Column(name = "Location", length = 255)
     private String location;
 
-    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL)
-    //@JsonManagedReference
-    private List<Payment> payments;
 
 }
