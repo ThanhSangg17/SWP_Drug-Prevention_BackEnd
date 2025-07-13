@@ -4,25 +4,21 @@ import com.swp.drugprevention.backend.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "campaign_responses")
+@Table(name = "campaign_submissions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CampaignResponse {
+public class CampaignSubmission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private LocalDate submittedAt;
-
-    private Integer totalScore;
 
     @ManyToOne
     private User user;
@@ -30,7 +26,12 @@ public class CampaignResponse {
     @ManyToOne
     private Campaign campaign;
 
-    @OneToMany(mappedBy = "response", cascade = CascadeType.ALL)
+    private Integer totalScore;
+
+    private Integer attemptNumber;
+
+    private LocalDateTime submittedAt;
+
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL)
     private List<CampaignAnswer> answers;
 }
-

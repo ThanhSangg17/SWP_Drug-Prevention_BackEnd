@@ -27,5 +27,14 @@ public class Campaign {
 
     @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL)
     private List<CampaignQuestion> questions;
-}
 
+    private Integer improveCount = 0;
+    private Integer noImproveCount = 0;
+    @Transient
+    public Double getSuccessRatePercent() {
+        int total = improveCount + noImproveCount;
+        if (total == 0) return 0.0;
+        return (improveCount * 100.0) / total;
+    }
+
+}

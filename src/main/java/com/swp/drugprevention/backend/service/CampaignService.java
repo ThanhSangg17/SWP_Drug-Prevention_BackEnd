@@ -9,7 +9,7 @@ import com.swp.drugprevention.backend.repository.campaignRepo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +20,8 @@ public class CampaignService {
     private final CampaignRepository campaignRepo;
     private final CampaignQuestionRepository questionRepo;
     private final CampaignOptionRepository optionRepo;
-    private final CampaignResponseRepository responseRepo;
+    private final CampaignSubmissionRepository campaignSubmissionRepo;
     private final CampaignAnswerRepository answerRepo;
-
     private final UserRepository userRepo;
 
     public Campaign createCampaign(Campaign campaign) {
@@ -38,48 +37,73 @@ public class CampaignService {
                 .orElseThrow(() -> new RuntimeException("Campaign not found"));
     }
 
-    public CampaignResponse submitSurvey(Integer campaignId, String userEmail, CampaignSubmitRequest request) {
-        User user = userRepo.findByEmail(userEmail)
+    public CampaignSubmission submitSurvey(Integer campaignId, Integer userId, CampaignSubmitRequest request) {
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Campaign campaign = getById(campaignId);
 
-        CampaignResponse response = CampaignResponse.builder()
-                .user(user)
-                .campaign(campaign)
-                .submittedAt(LocalDate.now())
-                .build();
+        List<CampaignSubmission> previousSubmissions = campaignSubmissionRepo.findByUserAndCampaignOrderBySubmittedAtAsc(user, campaign);
 
+        if (previousSubmissions.size() >= 2) {
+            throw new IllegalStateException("Bạn chỉ được làm tối đa 2 lần cho chiến dịch này.");
+        }
+
+        int attemptNumber = previousSubmissions.size() + 1;
         int totalScore = 0;
+
         List<CampaignAnswer> answers = new ArrayList<>();
 
         for (CampaignSubmitRequest.AnswerDTO dto : request.getAnswers()) {
             CampaignQuestion question = questionRepo.findById(dto.getQuestionId())
                     .orElseThrow(() -> new RuntimeException("Invalid question"));
 
-            CampaignAnswer answer = CampaignAnswer.builder()
-                    .question(question)
-                    .answerText(dto.getAnswerText())
-                    .response(response)
-                    .build();
+            CampaignOption selectedOption = null;
+            if ("MULTIPLE_CHOICE".equalsIgnoreCase(question.getType())) {
+                selectedOption = question.getOptions().stream()
+                        .filter(opt -> opt.getText().equalsIgnoreCase(dto.getAnswerText()))
+                        .findFirst()
+                        .orElse(null);
 
-            // Nếu câu hỏi có option chọn, tính điểm nếu khớp
-            if (question.getOptions() != null) {
-                for (CampaignOption opt : question.getOptions()) {
-                    if (opt.getText().equalsIgnoreCase(dto.getAnswerText())) {
-                        totalScore += opt.getScore();
-                        break;
-                    }
+                if (selectedOption != null) {
+                    totalScore += selectedOption.getScore();
                 }
             }
 
+            CampaignAnswer answer = CampaignAnswer.builder()
+                    .question(question)
+                    .answerText(dto.getAnswerText())
+                    .build();
             answers.add(answer);
         }
 
-        response.setTotalScore(totalScore);
-        response.setAnswers(answers);
-        responseRepo.save(response);
+        // 🧠 Tạo CampaignSubmission
+        CampaignSubmission submission = CampaignSubmission.builder()
+                .user(user)
+                .campaign(campaign)
+                .totalScore(totalScore)
+                .attemptNumber(attemptNumber)
+                .submittedAt(LocalDateTime.now())
+                .build();
 
-        return response;
+        for (CampaignAnswer answer : answers) {
+            answer.setSubmission(submission);
+        }
+
+        submission.setAnswers(answers);
+        campaignSubmissionRepo.save(submission);
+
+        // 🔁 Kiểm tra điểm cải thiện nếu là lần thứ 2
+        if (attemptNumber == 2 && previousSubmissions.size() == 1) {
+            int previousScore = previousSubmissions.get(0).getTotalScore();
+            if (totalScore > previousScore) {
+                campaign.setImproveCount(campaign.getImproveCount() + 1);
+            } else {
+                campaign.setNoImproveCount(campaign.getNoImproveCount() + 1);
+            }
+            campaignRepo.save(campaign);
+        }
+
+        return submission;
     }
 
     public Campaign importCampaign(CampaignImportRequest request) {
@@ -88,6 +112,8 @@ public class CampaignService {
                 .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
+                .improveCount(0)
+                .noImproveCount(0)
                 .build();
 
         List<CampaignQuestion> questions = new ArrayList<>();
@@ -116,5 +142,4 @@ public class CampaignService {
         campaign.setQuestions(questions);
         return campaignRepo.save(campaign);
     }
-
 }

@@ -22,6 +22,8 @@ public class CampaignAnswer {
     private CampaignQuestion question;
 
     @ManyToOne
-    private CampaignResponse response;
+    @JoinColumn(name = "submission_id")
+    private CampaignSubmission submission;
+
 }
 
