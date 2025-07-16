@@ -55,5 +55,8 @@ public class Appointment {
     @Column(name = "Location", length = 255)
     private String location;
 
+    @Column(name = "reminder_sent")
+    private Boolean reminderSent = false;
+
 
 }

@@ -53,7 +53,4 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Feedback> feedbacks;
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    private List<Payment> payments;
 }

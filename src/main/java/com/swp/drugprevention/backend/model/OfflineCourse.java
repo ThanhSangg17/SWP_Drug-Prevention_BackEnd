@@ -17,6 +17,7 @@ public class OfflineCourse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //    @Column(name = "courseName")
     private String tenKhoaHoc;
 
     @ManyToOne
@@ -28,6 +29,10 @@ public class OfflineCourse {
 
     @OneToMany(mappedBy = "offlineCourse", cascade = CascadeType.ALL)
     private List<Enrollment> enrollments;
+
+    @OneToMany(mappedBy = "course")
+    private List<Payment> payments;
+
 
 
     private double giaTien;

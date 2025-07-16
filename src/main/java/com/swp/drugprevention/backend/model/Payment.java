@@ -1,11 +1,11 @@
 package com.swp.drugprevention.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.swp.drugprevention.backend.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
 @Entity
 @Table(name = "Payments")
 @Getter
@@ -14,16 +14,19 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Payment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PaymentID")
     private Integer paymentId;
 
     @ManyToOne
     @JoinColumn(name = "UserID", referencedColumnName = "UserID")
+    @JsonIgnore
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "CourseID", referencedColumnName = "CourseID")
-    private Course course;
+    @JoinColumn(name = "OfflineCourseId")
+    @JsonIgnore
+    private OfflineCourse course;
 
     @Column(name = "Amount", nullable = false)
     private Double amount;
@@ -35,5 +38,5 @@ public class Payment {
     private String paymentMethod;
 
     @Column(name = "Status", length = 50)
-    private String status;
+    private PaymentStatus status;
 }

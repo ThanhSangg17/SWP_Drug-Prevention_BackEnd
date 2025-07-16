@@ -47,6 +47,7 @@ public class AppointmentService {
                 ))
                 .collect(Collectors.toList());
     }
+
     public AppointmentResponse saveAppointment(@Valid AppointmentRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request cannot be null");
@@ -123,40 +124,41 @@ public class AppointmentService {
         return true; // Không có xung đột, trả về true
     }
 
-    public Appointment getAppointmentById (Integer id){
-            return appointmentRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
-        }
-        public AppointmentResponse updateAppointment (Integer id, AppointmentRequest request){
-            Appointment appointment = getAppointmentById(id);
-            appointment.setStartTime(request.getStartTime());
-            appointment.setEndTime(request.getEndTime());
-            appointment.setDate(request.getDate());
-            appointment.setLocation(request.getLocation());
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
-            appointment.setUser(user);
+    public Appointment getAppointmentById(Integer id) {
+        return appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+    }
 
-            Consultant consultant = consultantRepository.findById(request.getConsultantId())
-                    .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + request.getConsultantId()));
-            appointment.setConsultant(consultant);
+    public AppointmentResponse updateAppointment(Integer id, AppointmentRequest request) {
+        Appointment appointment = getAppointmentById(id);
+        appointment.setStartTime(request.getStartTime());
+        appointment.setEndTime(request.getEndTime());
+        appointment.setDate(request.getDate());
+        appointment.setLocation(request.getLocation());
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
+        appointment.setUser(user);
 
-            Appointment savedAppointment = appointmentRepository.save(appointment);
-            return new AppointmentResponse(
-                    savedAppointment.getAppointmentId(),
-                    savedAppointment.getDate(),
-                    savedAppointment.getStartTime(),
-                    savedAppointment.getEndTime(),
-                    savedAppointment.getStatus(),
-                    savedAppointment.getLocation(),
-                    request.getUserId(),
-                    request.getConsultantId()
-            );
-        }
+        Consultant consultant = consultantRepository.findById(request.getConsultantId())
+                .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + request.getConsultantId()));
+        appointment.setConsultant(consultant);
 
-        public void deleteAppointment (Integer id){
-            appointmentRepository.deleteById(id);
-        }
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        return new AppointmentResponse(
+                savedAppointment.getAppointmentId(),
+                savedAppointment.getDate(),
+                savedAppointment.getStartTime(),
+                savedAppointment.getEndTime(),
+                savedAppointment.getStatus(),
+                savedAppointment.getLocation(),
+                request.getUserId(),
+                request.getConsultantId()
+        );
+    }
+
+    public void deleteAppointment(Integer id) {
+        appointmentRepository.deleteById(id);
+    }
 
     public List<AppointmentResponse> getMyAppointments(String email) {
         User user = userRepository.findByEmail(email)
@@ -213,6 +215,7 @@ public class AppointmentService {
             }
         }
     }
+
     public List<AppointmentResponse> getAppointmentsByConsultant(Integer consultantId) {
         Consultant consultant = consultantRepository.findById(consultantId)
                 .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + consultantId));
@@ -232,6 +235,7 @@ public class AppointmentService {
                 ))
                 .collect(Collectors.toList());
     }
+
     public AppointmentResponse setStatus(Integer appointmentId, ConsultationStatus newStatus) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
@@ -255,22 +259,21 @@ public class AppointmentService {
                 updated.getConsultant() != null ? updated.getConsultant().getConsultantId() : null
         );
     }
-    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60.000 ms)
-    public void sendAppointmentReminders() {
-        List<Appointment> upcomingAppointments = appointmentRepository.findByStatus(ConsultationStatus.Pending);
-
-        LocalDateTime now = LocalDateTime.now();
-
-        for (Appointment appointment : upcomingAppointments) {
-            LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
-            LocalDateTime reminderTime = appointmentDateTime.minusHours(12);
-
-            if (now.isAfter(reminderTime) && now.isBefore(reminderTime.plusMinutes(5))) {
-                String to = appointment.getUser().getEmail();
-                String name = appointment.getUser().getFullName(); // thay bằng đúng field
-                emailService.sendAppointmentReminder(to, name, appointmentDateTime);
-            }
-        }
-    }
-
 }
+//    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60.000 ms)
+//    public void sendAppointmentReminders() {
+//        List<Appointment> upcomingAppointments = appointmentRepository.findByStatus(ConsultationStatus.Pending);
+//
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        for (Appointment appointment : upcomingAppointments) {
+//            LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
+//            LocalDateTime reminderTime = appointmentDateTime.minusHours(12);
+//
+//            if (now.isAfter(reminderTime) && now.isBefore(reminderTime.plusMinutes(5))) {
+//                String to = appointment.getUser().getEmail();
+//                String name = appointment.getUser().getFullName(); // thay bằng đúng field
+//                emailService.sendAppointmentReminder(to, name, appointmentDateTime);
+//            }
+//        }
+//    }

@@ -1,5 +1,6 @@
 package com.swp.drugprevention.backend.service;
 
+import com.swp.drugprevention.backend.enums.ConsultationStatus;
 import com.swp.drugprevention.backend.model.Appointment;
 import com.swp.drugprevention.backend.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,21 +17,33 @@ public class AppointmentReminderService {
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
 
-    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60.000 ms)
+    @Scheduled(fixedRate = 60000) // Chạy mỗi phút
     public void sendReminders() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime target = now.plusHours(12);
 
-        List<Appointment> upcoming = appointmentRepository.findByDateTimeBetween(
-                target.minusMinutes(5), target.plusMinutes(5)
-        );
+        List<Appointment> upcoming = appointmentRepository.findByStatus(ConsultationStatus.Pending);
 
         for (Appointment appointment : upcoming) {
-            String email = appointment.getUser().getEmail();
-            String name = appointment.getUser().getFullName();
-            LocalDateTime time = LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
+            if (Boolean.TRUE.equals(appointment.getReminderSent())) {
+                continue;
+            }
 
-            emailService.sendAppointmentReminder(email, name, time);
+            LocalDateTime appointmentDateTime = LocalDateTime.of(
+                    appointment.getDate(), appointment.getStartTime());
+
+            LocalDateTime reminderWindowStart = appointmentDateTime.minusHours(12);
+            LocalDateTime reminderWindowEnd = reminderWindowStart.plusMinutes(5);
+
+            if (now.isAfter(reminderWindowStart) && now.isBefore(reminderWindowEnd)) {
+                String email = appointment.getUser().getEmail();
+                String name = appointment.getUser().getFullName();
+
+                emailService.sendAppointmentReminder(email, name, appointmentDateTime);
+
+                appointment.setReminderSent(true);
+                appointmentRepository.save(appointment);
+            }
         }
     }
 }
