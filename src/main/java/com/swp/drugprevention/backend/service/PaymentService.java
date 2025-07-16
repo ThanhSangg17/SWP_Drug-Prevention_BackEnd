@@ -55,6 +55,7 @@ public class PaymentService {
                 .qrCodeUrl(vnpUrl)
                 .message("Tạo thanh toán thành công. Vui lòng quét mã hoặc nhấn vào link để thanh toán.") // ✅ thêm dòng này
                 .userId(user.getUserId())
+                .courseId(courseId)
                 .build();
     }
 
@@ -84,6 +85,7 @@ public class PaymentService {
                 .paymentMethod(payment.getPaymentMethod())
                 .status(payment.getStatus())
                 .userId(payment.getUser().getUserId())
+                .courseId((payment.getCourse().getId()))
                 .qrCodeUrl(null)
                 .message(null)
                 .build();

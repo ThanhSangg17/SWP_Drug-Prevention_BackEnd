@@ -16,6 +16,8 @@ public class PaymentResponse {
 
     private Integer userId;
 
+    private Long courseId;
+
     private Double amount;
 
     private String paymentMethod;
