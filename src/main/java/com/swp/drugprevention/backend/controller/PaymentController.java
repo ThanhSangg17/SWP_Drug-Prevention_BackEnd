@@ -48,12 +48,12 @@ public class PaymentController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Payment>> getAllPayments() {
+    public ResponseEntity<List<PaymentResponse>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<Payment> getPaymentById(@PathVariable Integer paymentId) {
+    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Integer paymentId) {
         return ResponseEntity.ok(paymentService.getPaymentById(paymentId));
     }
 

@@ -14,14 +14,16 @@ public class PaymentResponse {
 
     private Integer paymentId;
 
+    private Integer userId;
+
     private Double amount;
 
     private String paymentMethod;
 
     private PaymentStatus status;
 
-    private String qrCodeUrl; // nếu dùng QR / VNPAY
+    private String qrCodeUrl;
 
-    private String message; // mô tả thêm nếu cần
+    private String message;
 
 }

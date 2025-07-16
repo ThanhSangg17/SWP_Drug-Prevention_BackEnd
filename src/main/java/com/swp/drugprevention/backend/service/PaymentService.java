@@ -54,6 +54,7 @@ public class PaymentService {
                 .status(payment.getStatus())
                 .qrCodeUrl(vnpUrl)
                 .message("Tạo thanh toán thành công. Vui lòng quét mã hoặc nhấn vào link để thanh toán.") // ✅ thêm dòng này
+                .userId(user.getUserId())
                 .build();
     }
 
@@ -65,13 +66,27 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    public List<Payment> getAllPayments() {
-        return paymentRepository.findAll();
+    public List<PaymentResponse> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public Payment getPaymentById(Integer paymentId) {
-        return paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Payment với ID: " + paymentId));
+    public PaymentResponse getPaymentById(Integer id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
+        return mapToResponse(payment);
+    }
+    private PaymentResponse mapToResponse(Payment payment) {
+        return PaymentResponse.builder()
+                .paymentId(payment.getPaymentId())
+                .amount(payment.getAmount())
+                .paymentMethod(payment.getPaymentMethod())
+                .status(payment.getStatus())
+                .userId(payment.getUser().getUserId())
+                .qrCodeUrl(null)
+                .message(null)
+                .build();
     }
 
 }
