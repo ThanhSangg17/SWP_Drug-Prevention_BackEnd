@@ -1,24 +1,14 @@
 package com.swp.drugprevention.backend.controller;
 
-import com.swp.drugprevention.backend.io.response.OfflineCourseResponse;
-import com.swp.drugprevention.backend.io.response.UserInfoResponse;
-import com.swp.drugprevention.backend.model.OfflineCourse;
-import com.swp.drugprevention.backend.model.Consultant;
-import com.swp.drugprevention.backend.model.User;
-import com.swp.drugprevention.backend.model.Enrollment;
-import com.swp.drugprevention.backend.repository.OfflineCourseRepository;
-import com.swp.drugprevention.backend.repository.ConsultantRepository;
-import com.swp.drugprevention.backend.repository.UserRepository;
-import com.swp.drugprevention.backend.repository.EnrollmentRepository;
-import com.swp.drugprevention.backend.io.response.OfflineCourseResponse;
+import com.swp.drugprevention.backend.io.request.CourseActiveUpdateRequest;
 import com.swp.drugprevention.backend.io.request.AttendanceUpdateRequest;
-import com.swp.drugprevention.backend.io.response.UserEnrolledCourseResponse;
-import com.swp.drugprevention.backend.model.CourseSession;
-import com.swp.drugprevention.backend.repository.CourseSessionRepository;
-import com.swp.drugprevention.backend.io.response.CourseSessionResponse;
 import com.swp.drugprevention.backend.io.request.SessionAttendanceRequest;
-import com.swp.drugprevention.backend.repository.SessionAttendanceRepository;
-import com.swp.drugprevention.backend.model.SessionAttendance;
+import com.swp.drugprevention.backend.io.response.OfflineCourseResponse;
+import com.swp.drugprevention.backend.io.response.UserEnrolledCourseResponse;
+import com.swp.drugprevention.backend.io.response.UserInfoResponse;
+import com.swp.drugprevention.backend.io.response.CourseSessionResponse;
+import com.swp.drugprevention.backend.model.*;
+import com.swp.drugprevention.backend.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,9 +32,12 @@ public class OfflineCourseController {
 
     @Autowired
     private EnrollmentRepository enrollmentRepository;
+
     @Autowired
     private CourseSessionRepository courseSessionRepository;
 
+    @Autowired
+    private SessionAttendanceRepository sessionAttendanceRepository;
 
     @GetMapping
     public List<OfflineCourse> getAllCourses() {
@@ -61,27 +54,25 @@ public class OfflineCourseController {
         course.setConsultant(consultant);
         OfflineCourse saved = repository.save(course);
 
-        // 🆕 Tạo 3 buổi học cách nhau 2 ngày
         for (int i = 0; i < 3; i++) {
             CourseSession session = new CourseSession();
             session.setCourse(saved);
             session.setSessionIndex(i + 1);
-            session.setSessionDate(course.getThoiGianBatDau().plusDays(i * 2));
+            session.setSessionDate(course.getStartTime().plusDays(i * 2));
             courseSessionRepository.save(session);
         }
 
         return saved;
     }
 
-
     @GetMapping("/{courseId}/sessions")
     public ResponseEntity<?> getSessionsByCourse(@PathVariable Long courseId,
                                                  @RequestParam Integer userId) {
         OfflineCourse course = repository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Khóa học không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Course not found"));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<CourseSession> sessions = courseSessionRepository.findByCourse(course);
 
@@ -92,32 +83,25 @@ public class OfflineCourseController {
                     session.getSessionIndex(),
                     session.getSessionDate()
             );
-
-            // ✅ Gán điểm danh nếu tồn tại
             sessionAttendanceRepository.findByUserAndSession(user, session)
                     .ifPresent(att -> dto.setIsPresent(att.getIsPresent()));
-
             return dto;
         }).toList();
 
         return ResponseEntity.ok(responseList);
     }
 
-
     @GetMapping("/consultant/{consultantId}/sessions")
     public ResponseEntity<?> getSessionsByConsultant(@PathVariable Integer consultantId) {
         Consultant consultant = consultantRepository.findById(consultantId)
-                .orElseThrow(() -> new RuntimeException("Consultant không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Consultant not found"));
 
-        // Lấy tất cả khóa học của consultant
         List<OfflineCourse> courses = repository.findByConsultant(consultant);
 
-        // Lấy tất cả buổi học thuộc các khóa đó
         List<CourseSession> allSessions = courses.stream()
                 .flatMap(course -> courseSessionRepository.findByCourse(course).stream())
                 .toList();
 
-        // Convert sang DTO
         List<CourseSessionResponse> responseList = allSessions.stream().map(session -> new CourseSessionResponse(
                 session.getId(),
                 session.getCourse().getId(),
@@ -128,20 +112,13 @@ public class OfflineCourseController {
         return ResponseEntity.ok(responseList);
     }
 
-
-
-
-    @Autowired
-    private SessionAttendanceRepository sessionAttendanceRepository;
-
-
     @PutMapping("/session/diemdanh")
     public ResponseEntity<?> markSessionAttendance(@RequestBody SessionAttendanceRequest request) {
         CourseSession session = courseSessionRepository.findById(request.getSessionId())
-                .orElseThrow(() -> new RuntimeException("Buổi học không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Session not found"));
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         SessionAttendance attendance = sessionAttendanceRepository
                 .findByUserAndSession(user, session)
@@ -153,11 +130,8 @@ public class OfflineCourseController {
 
         sessionAttendanceRepository.save(attendance);
 
-        return ResponseEntity.ok("Điểm danh buổi học thành công");
+        return ResponseEntity.ok("Attendance marked successfully.");
     }
-
-
-
 
     @GetMapping("/{id}")
     public OfflineCourse getCourse(@PathVariable Long id) {
@@ -170,15 +144,16 @@ public class OfflineCourseController {
     }
 
     @PostMapping("/dangky/{courseId}")
-    public ResponseEntity<String> registerCourse(@PathVariable  Long courseId, @RequestParam Integer userId) {
+    public ResponseEntity<String> registerCourse(@PathVariable Long courseId,
+                                                 @RequestParam Integer userId) {
         OfflineCourse course = repository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Khóa học không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Course not found"));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (enrollmentRepository.existsByUserAndOfflineCourse(user, course)) {
-            return ResponseEntity.badRequest().body("User đã đăng ký khóa học này.");
+            return ResponseEntity.badRequest().body("User already registered for this course.");
         }
 
         Enrollment enrollment = new Enrollment();
@@ -187,22 +162,47 @@ public class OfflineCourseController {
         enrollment.setEnrollDate(new Date(System.currentTimeMillis()));
 
         enrollmentRepository.save(enrollment);
-        return ResponseEntity.ok("Đăng ký khóa học thành công.");
+        return ResponseEntity.ok("Registered successfully.");
     }
-    @GetMapping("/getallcourse")
-    public ResponseEntity<List<OfflineCourseResponse>> getAllCourseWithInfo() {
-        List<OfflineCourse> courseList = repository.findAll();
 
-        List<OfflineCourseResponse> dtoList = courseList.stream().map(course -> {
+    @GetMapping("/active")
+    public ResponseEntity<List<OfflineCourseResponse>> getAllActiveCourses() {
+        List<OfflineCourse> activeCourses = repository.findAll().stream()
+                .filter(OfflineCourse::getActive)
+                .toList();
+
+        List<OfflineCourseResponse> dtoList = activeCourses.stream().map(course -> {
             OfflineCourseResponse dto = new OfflineCourseResponse();
             dto.setId(course.getId());
-            dto.setTenKhoaHoc(course.getTenKhoaHoc());
+            dto.setCourseName(course.getCourseName());
             dto.setConsultant(course.getConsultant());
-            dto.setGiaTien(course.getGiaTien());
-            dto.setDiaDiem(course.getDiaDiem());
-            dto.setThoiGianBatDau(course.getThoiGianBatDau());
-            dto.setThoiGianKetThuc(course.getThoiGianKetThuc());
-            dto.setSoLuongToiDa(course.getSoLuongToiDa());
+            dto.setPrice(course.getPrice());
+            dto.setLocation(course.getLocation());
+            dto.setStartTime(course.getStartTime());
+            dto.setEndTime(course.getEndTime());
+            dto.setMaxCapacity(course.getMaxCapacity());
+            dto.setActive(course.getActive());
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<OfflineCourseResponse>> getAllCoursesForAdmin() {
+        List<OfflineCourse> allCourses = repository.findAll();
+
+        List<OfflineCourseResponse> dtoList = allCourses.stream().map(course -> {
+            OfflineCourseResponse dto = new OfflineCourseResponse();
+            dto.setId(course.getId());
+            dto.setCourseName(course.getCourseName());
+            dto.setConsultant(course.getConsultant());
+            dto.setPrice(course.getPrice());
+            dto.setLocation(course.getLocation());
+            dto.setStartTime(course.getStartTime());
+            dto.setEndTime(course.getEndTime());
+            dto.setMaxCapacity(course.getMaxCapacity());
+            dto.setActive(course.getActive());
             return dto;
         }).toList();
 
@@ -212,10 +212,9 @@ public class OfflineCourseController {
     @GetMapping("/danhsach-dangky/{consultantId}")
     public ResponseEntity<?> getRegisteredUsersByConsultant(@PathVariable Integer consultantId) {
         Consultant consultant = consultantRepository.findById(consultantId)
-                .orElseThrow(() -> new RuntimeException("Consultant không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Consultant not found"));
 
         List<OfflineCourse> courses = repository.findByConsultant(consultant);
-
         List<Enrollment> enrollments = enrollmentRepository.findByOfflineCourseIn(courses);
 
         List<UserInfoResponse> userInfoList = enrollments.stream()
@@ -225,12 +224,10 @@ public class OfflineCourseController {
                             user.getUserId(),
                             user.getFullName(),
                             user.getEmail(),
-                            e.getIsPresent() != null ? e.getIsPresent() : false, // tránh null
-                            e.getOfflineCourse().getId() // ✅ Thêm courseId tại đây
-
+                            e.getIsPresent() != null ? e.getIsPresent() : false,
+                            e.getOfflineCourse().getId()
                     );
-                })
-                .toList(); // không cần distinct nếu vẫn cần nhiều lần điểm danh
+                }).toList();
 
         return ResponseEntity.ok(userInfoList);
     }
@@ -238,43 +235,43 @@ public class OfflineCourseController {
     @PutMapping("/diemdanh")
     public ResponseEntity<?> updateAttendance(@RequestBody AttendanceUpdateRequest request) {
         OfflineCourse course = repository.findById(request.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Khóa học không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Course not found"));
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Enrollment enrollment = enrollmentRepository.findByUserAndOfflineCourse(user, course)
-                .orElseThrow(() -> new RuntimeException("User chưa đăng ký khóa học này"));
+                .orElseThrow(() -> new RuntimeException("User not registered for course"));
 
         enrollment.setIsPresent(request.getIsPresent());
         enrollmentRepository.save(enrollment);
 
-        return ResponseEntity.ok("Điểm danh thành công.");
+        return ResponseEntity.ok("Attendance updated.");
     }
 
     @PutMapping("/diemdanh-hangloat")
     public ResponseEntity<?> updateAttendanceBatch(@RequestBody List<AttendanceUpdateRequest> requests) {
         for (AttendanceUpdateRequest req : requests) {
             OfflineCourse course = repository.findById(req.getCourseId())
-                    .orElseThrow(() -> new RuntimeException("Khóa học không tồn tại (id=" + req.getCourseId() + ")"));
+                    .orElseThrow(() -> new RuntimeException("Course not found (id=" + req.getCourseId() + ")"));
 
             User user = userRepository.findById(req.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User không tồn tại (id=" + req.getUserId() + ")"));
+                    .orElseThrow(() -> new RuntimeException("User not found (id=" + req.getUserId() + ")"));
 
             Enrollment enrollment = enrollmentRepository.findByUserAndOfflineCourse(user, course)
-                    .orElseThrow(() -> new RuntimeException("User chưa đăng ký khóa học (userId=" + req.getUserId() + ", courseId=" + req.getCourseId() + ")"));
+                    .orElseThrow(() -> new RuntimeException("User not registered (userId=" + req.getUserId() + ", courseId=" + req.getCourseId() + ")"));
 
             enrollment.setIsPresent(req.getIsPresent());
             enrollmentRepository.save(enrollment);
         }
 
-        return ResponseEntity.ok("Cập nhật điểm danh hàng loạt thành công.");
+        return ResponseEntity.ok("Batch attendance updated.");
     }
 
     @GetMapping("/khoahoc-cuatoi/{userId}")
     public ResponseEntity<?> getCoursesByUser(@PathVariable Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<Enrollment> enrollments = enrollmentRepository.findByUser(user);
 
@@ -283,21 +280,25 @@ public class OfflineCourseController {
                     OfflineCourse course = e.getOfflineCourse();
                     return new UserEnrolledCourseResponse(
                             course.getId(),
-                            course.getTenKhoaHoc(),
-                            course.getDiaDiem(),
-                            course.getThoiGianBatDau(),
-                            course.getThoiGianKetThuc(),
+                            course.getCourseName(),
+                            course.getLocation(),
+                            course.getStartTime(),
+                            course.getEndTime(),
                             course.getConsultant()
                     );
-                })
-                .toList();
+                }).toList();
 
         return ResponseEntity.ok(courseList);
     }
 
+    @PutMapping("/update-active")
+    public ResponseEntity<?> updateCourseActive(@RequestBody CourseActiveUpdateRequest request) {
+        OfflineCourse course = repository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
 
+        course.setActive(request.getActive());
+        repository.save(course);
 
-
-
-
+        return ResponseEntity.ok("✅ Course active status updated.");
+    }
 }

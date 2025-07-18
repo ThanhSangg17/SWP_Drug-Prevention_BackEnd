@@ -1,27 +1,19 @@
 package com.swp.drugprevention.backend.io.response;
 
 import com.swp.drugprevention.backend.model.Consultant;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-
-import java.sql.Timestamp;
-
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-
 public class OfflineCourseResponse {
-
     private Long id;
-    private String tenKhoaHoc;
+    private String courseName;
     private Consultant consultant;
-    private Double giaTien;
-    private String diaDiem;
-    private LocalDateTime thoiGianBatDau;
-    private LocalDateTime thoiGianKetThuc;
-
-    private Integer soLuongToiDa;
+    private double price;
+    private String location;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private int maxCapacity;
+    private Boolean active;
 }
