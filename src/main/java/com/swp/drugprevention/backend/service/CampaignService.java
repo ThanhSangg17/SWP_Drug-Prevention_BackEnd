@@ -142,4 +142,9 @@ public class CampaignService {
         campaign.setQuestions(questions);
         return campaignRepo.save(campaign);
     }
+    public Campaign toggleCampaignStatus(Integer campaignId) {
+        Campaign campaign = getById(campaignId);
+        campaign.setActive(!campaign.isActive());
+        return campaignRepo.save(campaign);
+    }
 }

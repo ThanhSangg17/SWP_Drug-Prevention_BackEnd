@@ -25,4 +25,5 @@ public class SurveyTemplateResponse {
     private GenderGroup genderGroup;
 
     private RiskLevel riskLevel;
+    private boolean isActive;
 }

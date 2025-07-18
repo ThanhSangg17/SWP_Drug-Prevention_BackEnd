@@ -49,4 +49,6 @@ public class SurveyTemplate {
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL)
     private List<Survey> surveys = new ArrayList<>();
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean isActive = true;
 }

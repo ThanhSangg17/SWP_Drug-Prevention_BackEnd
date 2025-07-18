@@ -42,6 +42,20 @@ public class AdminDashboardSurveyController {
     private final SurveyTemplateService service;
     private final SurveyRequestRepository surveyRequestRepository;
 
+    // API để bật/tắt khảo sát
+    //bấm 1 cái là survey template sẽ bật hoặc tắt
+    @PutMapping("/template-toggle/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> toggleSurveyTemplate(@PathVariable Integer id) {
+        try {
+            SurveyTemplate template = service.toggleSurveyTemplateStatus(id);
+            String status = template.isActive() ? "enabled" : "disabled";
+            return ResponseEntity.ok("Survey template with id " + id + " has been " + status);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Survey template not found: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/import-survey")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {

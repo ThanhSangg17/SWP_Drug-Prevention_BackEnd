@@ -18,8 +18,17 @@ public class SurveyTemplateService {
 
     private final SurveyTemplateRepository templateRepo;
 
+
+    // Cập nhật trạng thái bật/tắt của khảo sát
+    public SurveyTemplate toggleSurveyTemplateStatus(Integer id) {
+        SurveyTemplate template = templateRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Survey template not found with id: " + id));
+        template.setActive(!template.isActive());
+        return templateRepo.save(template);
+    }
+    // Lấy tất cả các template đang bật
     public List<SurveyTemplateResponse> getAllTemplates() {
-        return templateRepo.findAll().stream()
+        return templateRepo.findAllByIsActiveTrue().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
@@ -33,6 +42,7 @@ public class SurveyTemplateService {
                 .ageGroup(template.getAgeGroup())
                 .genderGroup(template.getGenderGroup())
                 .riskLevel(template.getRiskLevel())
+                .isActive(template.isActive())
                 .build();
     }
 

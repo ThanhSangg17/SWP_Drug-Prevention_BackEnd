@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class OfflineCourseResponse {
+public class  OfflineCourseResponse {
 
     private Long id;
     private String tenKhoaHoc;
