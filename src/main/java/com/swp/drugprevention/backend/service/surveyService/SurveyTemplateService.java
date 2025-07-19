@@ -33,7 +33,12 @@ public class SurveyTemplateService {
                 .collect(Collectors.toList());
     }
 
-    private SurveyTemplateResponse toResponse(SurveyTemplate template) {
+    // Lấy tất cả các template (bật/tắt) cho admin
+    public List<SurveyTemplate> getAllTemplatesIncludingInactive() {
+        return templateRepo.findAll();
+    }
+
+    public SurveyTemplateResponse toResponse(SurveyTemplate template) {
         return SurveyTemplateResponse.builder()
                 .templateId(template.getTemplateId())
                 .name(template.getName())
@@ -45,6 +50,7 @@ public class SurveyTemplateService {
                 .isActive(template.isActive())
                 .build();
     }
+
 
     public SurveyTemplateResponse getTemplateById(Integer id) {
         return templateRepo.findById(id).map(this::toResponse).orElseThrow(() -> new RuntimeException("Survey template not found with id: " + id));

@@ -132,6 +132,27 @@ public class AdminDashboardSurveyController {
         return service.getAllTemplates();
     }
 
+    // API mới: Lấy tất cả các template (bật/tắt) cho admin
+    @GetMapping("/getAll-templates-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SurveyTemplateResponse>> getAllTemplatesForAdmin() {
+        List<SurveyTemplate> templates = service.getAllTemplatesIncludingInactive();
+        return ResponseEntity.ok(templates.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+    private SurveyTemplateResponse toResponse(SurveyTemplate template) {
+        return SurveyTemplateResponse.builder()
+                .templateId(template.getTemplateId())
+                .name(template.getName())
+                .description(template.getDescription())
+                .surveyType(template.getSurveyType())
+                .ageGroup(template.getAgeGroup())
+                .genderGroup(template.getGenderGroup())
+                .riskLevel(template.getRiskLevel())
+                .isActive(template.isActive())
+                .build();
+    }
+
+
     //Trong quá trình import survey nếu lỡ có sai sót gì thì có thể sửa lại -> Cũng hơi cần thiết
     @PutMapping("/template-update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
