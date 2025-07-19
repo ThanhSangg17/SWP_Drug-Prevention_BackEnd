@@ -64,7 +64,7 @@ public class CampaignController {
     }
 
     @PutMapping("/{campaignId}/toggle")
-    @PreAuthorize("hasRole('ADMIN') or has Pandora hasRole('STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> toggleCampaign(@PathVariable Integer campaignId) {
         try {
             Campaign campaign = campaignService.toggleCampaignStatus(campaignId);
