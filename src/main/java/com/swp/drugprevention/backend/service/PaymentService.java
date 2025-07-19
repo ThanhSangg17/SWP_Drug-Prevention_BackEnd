@@ -37,7 +37,7 @@ public class PaymentService {
         Payment payment = Payment.builder()
                 .user(user)
                 .course(course)
-                .amount(course.getGiaTien())
+                .amount(course.getPrice())
                 .paymentDate(new java.sql.Date(System.currentTimeMillis()))
                 .paymentMethod("VNPAY")
                 .status(PaymentStatus.PENDING)
@@ -45,7 +45,7 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        String vnpUrl = vnPayService.createPaymentUrl(payment.getPaymentId().longValue(), (int) course.getGiaTien(), ipAddress);
+        String vnpUrl = vnPayService.createPaymentUrl(payment.getPaymentId().longValue(), (int) course.getPrice(), ipAddress);
 
         return PaymentResponse.builder()
                 .paymentId(payment.getPaymentId())

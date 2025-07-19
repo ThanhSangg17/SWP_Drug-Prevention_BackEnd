@@ -2,6 +2,8 @@ package com.swp.drugprevention.backend.service;
 
 import com.swp.drugprevention.backend.io.request.CampaignImportRequest;
 import com.swp.drugprevention.backend.io.request.CampaignSubmitRequest;
+import com.swp.drugprevention.backend.io.response.CampaignSubmissionReviewDTO;
+import com.swp.drugprevention.backend.io.response.QuestionAnswerDTO;
 import com.swp.drugprevention.backend.model.User;
 import com.swp.drugprevention.backend.model.campaign.*;
 import com.swp.drugprevention.backend.repository.UserRepository;
@@ -26,6 +28,30 @@ public class CampaignService {
 
     public Campaign createCampaign(Campaign campaign) {
         return campaignRepo.save(campaign);
+    }
+
+    public List<CampaignSubmissionReviewDTO> getUserSubmissionsForReview(Integer campaignId, Integer userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Campaign campaign = getById(campaignId);
+
+        List<CampaignSubmission> submissions = campaignSubmissionRepo
+                .findByUserAndCampaignOrderBySubmittedAtAsc(user, campaign);
+
+        return submissions.stream().map(sub -> {
+            List<QuestionAnswerDTO> answers = sub.getAnswers().stream()
+                    .map(ans -> new QuestionAnswerDTO(
+                            ans.getQuestion().getContent(),
+                            ans.getAnswerText()))
+                    .toList();
+
+            return new CampaignSubmissionReviewDTO(
+                    sub.getAttemptNumber(),
+                    sub.getSubmittedAt(),
+                    sub.getTotalScore(),
+                    answers
+            );
+        }).toList();
     }
 
     public List<Campaign> getAll() {

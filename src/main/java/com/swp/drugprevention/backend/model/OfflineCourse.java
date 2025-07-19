@@ -2,9 +2,9 @@ package com.swp.drugprevention.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,8 +17,7 @@ public class OfflineCourse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //    @Column(name = "courseName")
-    private String tenKhoaHoc;
+    private String courseName;
 
     @ManyToOne
     @JoinColumn(name = "ConsultantID", nullable = false)
@@ -33,11 +32,18 @@ public class OfflineCourse {
     @OneToMany(mappedBy = "course")
     private List<Payment> payments;
 
+    @Column(nullable = false)
+    private Boolean active = true;
 
 
-    private double giaTien;
-    private String diaDiem;
-    private LocalDateTime thoiGianBatDau;
-    private LocalDateTime thoiGianKetThuc;
-    private int soLuongToiDa;
+    private double price;
+
+    private String location;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+
+    private int maxCapacity;
+
 }
