@@ -28,4 +28,6 @@ public class PaymentResponse {
 
     private String message;
 
+    private java.sql.Date paymentDate;
+
 }

@@ -1,7 +1,9 @@
 package com.swp.drugprevention.backend.io.response;
 
 import com.swp.drugprevention.backend.model.Consultant;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

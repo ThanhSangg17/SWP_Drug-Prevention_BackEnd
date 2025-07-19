@@ -3,6 +3,8 @@ package com.swp.drugprevention.backend.controller;
 import com.swp.drugprevention.backend.enums.PaymentStatus;
 import com.swp.drugprevention.backend.io.response.PaymentResponse;
 import com.swp.drugprevention.backend.model.Payment;
+import com.swp.drugprevention.backend.model.VnPayTransaction;
+import com.swp.drugprevention.backend.repository.VnPayTransactionRepository;
 import com.swp.drugprevention.backend.service.PaymentService;
 import com.swp.drugprevention.backend.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;

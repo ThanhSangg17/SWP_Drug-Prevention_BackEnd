@@ -1,6 +1,8 @@
 package com.swp.drugprevention.backend.service;
 
 import com.swp.drugprevention.backend.config.VnPayConfig;
+import com.swp.drugprevention.backend.model.VnPayTransaction;
+import com.swp.drugprevention.backend.repository.VnPayTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,7 @@ import java.util.*;
 public class VnPayService {
 
     private final VnPayConfig vnPayProps;
-
+    private final VnPayTransactionRepository repository;
     public String createPaymentUrl(Long orderId, int amount, String ipAddress) {
         try {
             Map<String, String> params = new HashMap<>();
@@ -112,11 +114,25 @@ public class VnPayService {
         String vnp_ResponseCode = params.get("vnp_ResponseCode");
         String vnp_TxnRef = params.get("vnp_TxnRef");
 
+        // Lưu vào DB
+        VnPayTransaction txn = new VnPayTransaction();
+        txn.setVnpTxnRef(vnp_TxnRef);
+        txn.setOrderInfo(params.get("vnp_OrderInfo"));
+        txn.setResponseCode(vnp_ResponseCode);
+        txn.setTransactionStatus(params.get("vnp_TransactionStatus"));
+        txn.setBankCode(params.get("vnp_BankCode"));
+        txn.setPayDate(params.get("vnp_PayDate"));
+        txn.setAmount(Integer.parseInt(params.get("vnp_Amount")) / 100);
+        txn.setCardType(params.get("vnp_CardType"));
+
+        repository.save(txn);
+
         if ("00".equals(vnp_ResponseCode)) {
             return "✅ Thanh toán thành công! Mã giao dịch: " + vnp_TxnRef;
         } else {
             return "❌ Thanh toán thất bại! Mã lỗi: " + vnp_ResponseCode;
         }
     }
+
 
 }
