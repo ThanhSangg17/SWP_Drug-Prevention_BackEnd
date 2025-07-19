@@ -114,6 +114,7 @@ public class CampaignService {
                 .endDate(request.getEndDate())
                 .improveCount(0)
                 .noImproveCount(0)
+                .isActive(true)
                 .build();
 
         List<CampaignQuestion> questions = new ArrayList<>();
@@ -144,7 +145,11 @@ public class CampaignService {
     }
     public Campaign toggleCampaignStatus(Integer campaignId) {
         Campaign campaign = getById(campaignId);
-        campaign.setActive(!campaign.isActive());
-        return campaignRepo.save(campaign);
+        boolean newActiveState = !campaign.isActive();
+        campaign.setActive(newActiveState);
+        Campaign savedCampaign = campaignRepo.save(campaign);
+        // Đảm bảo flush để commit thay đổi ngay lập tức
+        campaignRepo.flush();
+        return savedCampaign;
     }
 }
