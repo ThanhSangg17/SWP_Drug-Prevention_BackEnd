@@ -53,4 +53,7 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Feedback> feedbacks;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean isActive = true;
 }

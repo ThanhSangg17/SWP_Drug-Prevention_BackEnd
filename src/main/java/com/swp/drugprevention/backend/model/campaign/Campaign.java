@@ -43,5 +43,7 @@ public class Campaign {
         return improve * 100.0 / total;
     }
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean isActive = true;
 
 }

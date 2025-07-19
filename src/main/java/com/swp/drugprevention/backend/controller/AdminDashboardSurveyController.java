@@ -42,6 +42,20 @@ public class AdminDashboardSurveyController {
     private final SurveyTemplateService service;
     private final SurveyRequestRepository surveyRequestRepository;
 
+    // API để bật/tắt khảo sát
+    //bấm 1 cái là survey template sẽ bật hoặc tắt
+    @PutMapping("/template-toggle/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> toggleSurveyTemplate(@PathVariable Integer id) {
+        try {
+            SurveyTemplate template = service.toggleSurveyTemplateStatus(id);
+            String status = template.isActive() ? "enabled" : "disabled";
+            return ResponseEntity.ok("Survey template with id " + id + " has been " + status);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Survey template not found: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/import-survey")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {
@@ -117,6 +131,27 @@ public class AdminDashboardSurveyController {
     public List<SurveyTemplateResponse> getAll() {
         return service.getAllTemplates();
     }
+
+    // API mới: Lấy tất cả các template (bật/tắt) cho admin
+    @GetMapping("/getAll-templates-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SurveyTemplateResponse>> getAllTemplatesForAdmin() {
+        List<SurveyTemplate> templates = service.getAllTemplatesIncludingInactive();
+        return ResponseEntity.ok(templates.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+    private SurveyTemplateResponse toResponse(SurveyTemplate template) {
+        return SurveyTemplateResponse.builder()
+                .templateId(template.getTemplateId())
+                .name(template.getName())
+                .description(template.getDescription())
+                .surveyType(template.getSurveyType())
+                .ageGroup(template.getAgeGroup())
+                .genderGroup(template.getGenderGroup())
+                .riskLevel(template.getRiskLevel())
+                .isActive(template.isActive())
+                .build();
+    }
+
 
     //Trong quá trình import survey nếu lỡ có sai sót gì thì có thể sửa lại -> Cũng hơi cần thiết
     @PutMapping("/template-update/{id}")

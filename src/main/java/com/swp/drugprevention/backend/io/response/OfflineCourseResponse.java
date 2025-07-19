@@ -6,7 +6,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class OfflineCourseResponse {
+@AllArgsConstructor
+@NoArgsConstructor
+
+public class  OfflineCourseResponse {
     private Long id;
     private String courseName;
     private Consultant consultant;

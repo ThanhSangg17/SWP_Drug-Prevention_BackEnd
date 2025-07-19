@@ -27,7 +27,7 @@ public class CampaignController {
 //    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     public ResponseEntity<?> importCampaign(@RequestBody CampaignImportRequest request) {
         Campaign created = campaignService.importCampaign(request);
-        return ResponseEntity.ok("✅ Chiến dịch được import thành công với ID: " + created.getId());
+        return ResponseEntity.ok("Chiến dịch được import thành công với ID: " + created.getId());
     }
 
     @GetMapping("/all")
@@ -68,7 +68,7 @@ public class CampaignController {
             @RequestBody CampaignSubmitRequest request) {
 
         if (request == null || request.getAnswers() == null || request.getAnswers().isEmpty()) {
-            return ResponseEntity.badRequest().body("❌ Bạn chưa trả lời câu hỏi nào.");
+            return ResponseEntity.badRequest().body("Bạn chưa trả lời câu hỏi nào.");
         }
 
         try {
@@ -77,11 +77,25 @@ public class CampaignController {
                     "totalScore", result.getTotalScore(),
                     "attemptNumber", result.getAttemptNumber(),
                     "submittedAt", result.getSubmittedAt(),
-                    "message", "✅ Bạn đã hoàn thành khảo sát lần " + result.getAttemptNumber()
+                    "message", "Bạn đã hoàn thành khảo sát lần " + result.getAttemptNumber()
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("🚨 Lỗi khi xử lý khảo sát: " + e.getMessage());
+                    .body("Lỗi khi xử lý khảo sát: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{campaignId}/toggle")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> toggleCampaign(@PathVariable Integer campaignId) {
+        try {
+            Campaign campaign = campaignService.toggleCampaignStatus(campaignId);
+            String status = campaign.isActive() ? "enabled" : "disabled";
+            return ResponseEntity.ok("Chiến dịch đã được " + status + " thành công. ID: " + campaignId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Không tìm thấy chiến dịch với ID: " + campaignId);
+        }
+    }
+
 }
