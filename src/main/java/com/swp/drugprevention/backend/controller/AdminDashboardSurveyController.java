@@ -166,4 +166,21 @@ public class AdminDashboardSurveyController {
                 .toList();
         return ResponseEntity.ok(responsesRequests);
     }
+    @GetMapping("/getAll-templates-admin")
+    public ResponseEntity<List<SurveyTemplateResponse>> getAllTemplatesForAdmin() {
+        List<SurveyTemplate> templates = service.getAllTemplatesIncludingInactive();
+        return ResponseEntity.ok(templates.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+    private SurveyTemplateResponse toResponse(SurveyTemplate template) {
+        return SurveyTemplateResponse.builder()
+                .templateId(template.getTemplateId())
+                .name(template.getName())
+                .description(template.getDescription())
+                .surveyType(template.getSurveyType())
+                .ageGroup(template.getAgeGroup())
+                .genderGroup(template.getGenderGroup())
+                .riskLevel(template.getRiskLevel())
+                .isActive(template.isActive())
+                .build();
+    }
 }
