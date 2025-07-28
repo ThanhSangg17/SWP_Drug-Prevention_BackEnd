@@ -60,7 +60,7 @@ public class AppointmentController {
     }
 
     @GetMapping(value = "/getAllAppointment")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or hasRole('MANAGER')")
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or hasRole('MANAGER')")
     public ResponseEntity<List<AppointmentResponse>> getAllAppointments() {
         List<AppointmentResponse> list = service.getAllAppointments();
         return ResponseEntity.status(HttpStatus.OK).body(list);
@@ -98,7 +98,7 @@ public class AppointmentController {
 
     //Hủy lịch hẹn dành cho staff
     @PutMapping("/cancel/{appointmentId}")
-    @PreAuthorize("hasRole('STAFF')")
+    //@PreAuthorize("hasRole('STAFF')")
     // Hủy lịch hẹn, chỉ cần truyền vào appointmentId, sẽ cập nhật status thành CANCELLED
     public ResponseEntity<?> cancelAppointment(@PathVariable("appointmentId") Integer appointmentId) {
         AppointmentResponse response = service.cancelAppointment(appointmentId);

@@ -45,7 +45,7 @@ public class AdminDashboardSurveyController {
     // API để bật/tắt khảo sát
     //bấm 1 cái là survey template sẽ bật hoặc tắt
     @PutMapping("/template-toggle/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> toggleSurveyTemplate(@PathVariable Integer id) {
         try {
             SurveyTemplate template = service.toggleSurveyTemplateStatus(id);
@@ -57,7 +57,7 @@ public class AdminDashboardSurveyController {
     }
 
     @PostMapping("/import-survey")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> importFromFile(@RequestParam("file") MultipartFile file) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -104,13 +104,13 @@ public class AdminDashboardSurveyController {
     }
 
     @GetMapping("/getAll-surveys")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DashboardSurveyResponse>> getAllSurveys() {
         return ResponseEntity.ok(dashboardSurveyService.getAll());
     }
 
     @GetMapping("/surveyDetail/{surveyId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SurveyResponse> getSurveyDetail(@PathVariable Integer surveyId,
                                                           @AuthenticationPrincipal UserDetails userDetails) {
         Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
@@ -118,7 +118,6 @@ public class AdminDashboardSurveyController {
         if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
         Optional<Survey> survey = surveyService.findSurveyById(surveyId);
         if (survey.isEmpty() || survey.get().getUser() == null || !survey.get().getUser().getUserId().equals(user.get().getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -132,30 +131,9 @@ public class AdminDashboardSurveyController {
         return service.getAllTemplates();
     }
 
-    // API mới: Lấy tất cả các template (bật/tắt) cho admin
-    @GetMapping("/getAll-templates-admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SurveyTemplateResponse>> getAllTemplatesForAdmin() {
-        List<SurveyTemplate> templates = service.getAllTemplatesIncludingInactive();
-        return ResponseEntity.ok(templates.stream().map(this::toResponse).collect(Collectors.toList()));
-    }
-    private SurveyTemplateResponse toResponse(SurveyTemplate template) {
-        return SurveyTemplateResponse.builder()
-                .templateId(template.getTemplateId())
-                .name(template.getName())
-                .description(template.getDescription())
-                .surveyType(template.getSurveyType())
-                .ageGroup(template.getAgeGroup())
-                .genderGroup(template.getGenderGroup())
-                .riskLevel(template.getRiskLevel())
-                .isActive(template.isActive())
-                .build();
-    }
-
-
     //Trong quá trình import survey nếu lỡ có sai sót gì thì có thể sửa lại -> Cũng hơi cần thiết
     @PutMapping("/template-update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> update(@PathVariable Integer id, @RequestBody SurveyTemplateUpdateRequest request) {
         try {
             service.updateTemplate(id, request);
@@ -166,7 +144,7 @@ public class AdminDashboardSurveyController {
     }
 
     @DeleteMapping("/template-delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {
             service.deleteTemplate(id);
@@ -177,7 +155,7 @@ public class AdminDashboardSurveyController {
     }
 
     @GetMapping("/get-surveys-requests-resolved")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllRequestResolved() {
         List<SurveyRequest> requests = surveyRequestRepository.findAll();
         if (requests.isEmpty()) {

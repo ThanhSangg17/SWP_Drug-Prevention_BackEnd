@@ -58,7 +58,7 @@ public class ProfileController {
     }
 
     @PutMapping("/{userId}/roles")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProfileResponse> updateUserRoles(@PathVariable Integer userId, @RequestBody RoleUpdateRequest roleUpdateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("UserID is not found: " + userId));
@@ -99,14 +99,14 @@ public class ProfileController {
                 .body(profileResponse);
     }
     @GetMapping("/profileAllUser")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ProfileResponse>> getAllUserProfile() {
         List<ProfileResponse> allProfiles = profileService.getAllUserProfile();
         return ResponseEntity.ok(allProfiles);
     }
 
     @DeleteMapping("/delete/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
         profileServiceImpl.deleteUserById(userId);
         return ResponseEntity.ok("Đã xóa người dùng với ID: " + userId);
@@ -114,7 +114,7 @@ public class ProfileController {
 
     @GetMapping("/profile")
     public ProfileResponse getProfile(@CurrentSecurityContext(expression = "authentication?.name") String email) { //@CurrentSecurityContext(expression = "authentication?.name") dùng cho chức năng cần được xác thực và
-        //nếu không được xác thực thì sẽ bị ném ra ngoại lệ được thiết lập trong CustomAuthenticationEntryPoint và cấu hình trong config
+//nếu không được xác thực thì sẽ bị ném ra ngoại lệ được thiết lập trong CustomAuthenticationEntryPoint và cấu hình trong config
         return profileService.getProfile(email);
     }
 
@@ -157,7 +157,7 @@ public class ProfileController {
                         .body("Cập nhật thông tin tư vấn viên thất bại: " + e.getMessage());
             }
         }
-            //create user from map body
+        //create user from map body
         Set<String> allowedFields = Set.of("fullName", "yob", "gender", "phone");
         for (String key : body.keySet()) {
             if (!allowedFields.contains(key)) {
@@ -165,24 +165,24 @@ public class ProfileController {
                         .body("Cập nhật thông tin người dùng thất bại! Làm ơn điền đúng vào body fields được cho phép theo role: "+ user.getRoleName() +" của bro thôi nhé!");
             }
         }
-            try {
-                UpdateUserProfileRequest userRequest = new UpdateUserProfileRequest();
-                userRequest.setFullName((String) body.get("fullName"));
-                userRequest.setYob((Integer) body.get("yob"));
-                userRequest.setGender((String) body.get("gender"));
-                userRequest.setPhone((String) body.get("phone"));
+        try {
+            UpdateUserProfileRequest userRequest = new UpdateUserProfileRequest();
+            userRequest.setFullName((String) body.get("fullName"));
+            userRequest.setYob((Integer) body.get("yob"));
+            userRequest.setGender((String) body.get("gender"));
+            userRequest.setPhone((String) body.get("phone"));
 
-                profileServiceImpl.updateUserProfile(user, userRequest);
+            profileServiceImpl.updateUserProfile(user, userRequest);
 
-                ProfileResponse profileResponse = profileService.getProfile(user.getEmail());
-                return ResponseEntity.ok()
-                        .header("X-Custom-Message", "Cập nhật profile thành công tại " + java.time.LocalDateTime.now())
-                        .body(profileResponse);
+            ProfileResponse profileResponse = profileService.getProfile(user.getEmail());
+            return ResponseEntity.ok()
+                    .header("X-Custom-Message", "Cập nhật profile thành công tại " + java.time.LocalDateTime.now())
+                    .body(profileResponse);
 
-            }catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Cập nhật thông tin người dùng thất bại: " + e.getMessage());
-            }
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Cập nhật thông tin người dùng thất bại: " + e.getMessage());
+        }
 
     }
 

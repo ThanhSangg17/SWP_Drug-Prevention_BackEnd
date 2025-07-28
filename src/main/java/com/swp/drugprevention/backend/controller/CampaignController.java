@@ -2,7 +2,6 @@ package com.swp.drugprevention.backend.controller;
 
 import com.swp.drugprevention.backend.io.request.CampaignImportRequest;
 import com.swp.drugprevention.backend.io.request.CampaignSubmitRequest;
-import com.swp.drugprevention.backend.io.response.CampaignSubmissionReviewDTO;
 import com.swp.drugprevention.backend.model.campaign.Campaign;
 import com.swp.drugprevention.backend.model.campaign.CampaignSubmission;
 import com.swp.drugprevention.backend.service.CampaignService;
@@ -35,27 +34,6 @@ public class CampaignController {
         return ResponseEntity.ok(campaignService.getAll());
     }
 
-    @GetMapping("/{campaignId}/submissions/review")
-    public ResponseEntity<?> reviewUserSubmissions(
-            @PathVariable Integer campaignId,
-            @RequestParam Integer userId) {
-        try {
-            List<CampaignSubmissionReviewDTO> reviews =
-                    campaignService.getUserSubmissionsForReview(campaignId, userId);
-
-            if (reviews.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("❌ User chưa từng tham gia chiến dịch này.");
-            }
-
-            return ResponseEntity.ok(reviews);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("⚠️ Lỗi: " + e.getMessage());
-        }
-    }
-
-
     @GetMapping("/{id}")
     public ResponseEntity<Campaign> getOne(@PathVariable Integer id) {
         return ResponseEntity.ok(campaignService.getById(id));
@@ -86,7 +64,7 @@ public class CampaignController {
     }
 
     @PutMapping("/{campaignId}/toggle")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN') or has Pandora hasRole('STAFF')")
     public ResponseEntity<?> toggleCampaign(@PathVariable Integer campaignId) {
         try {
             Campaign campaign = campaignService.toggleCampaignStatus(campaignId);
@@ -97,5 +75,4 @@ public class CampaignController {
                     .body("Không tìm thấy chiến dịch với ID: " + campaignId);
         }
     }
-
 }

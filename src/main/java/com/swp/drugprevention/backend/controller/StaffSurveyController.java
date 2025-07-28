@@ -30,7 +30,7 @@ public class StaffSurveyController {
     private final SurveyService surveyService;
 
     @GetMapping("/get-user-requests")
-    @PreAuthorize("hasRole('STAFF')")
+    //@PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<?> getPendingRequests(
             @RequestParam(required = false) String status) {
         List<SurveyRequest> requests;
@@ -52,7 +52,7 @@ public class StaffSurveyController {
     }
 
     @PostMapping("/request/{requestId}/approve")
-    @PreAuthorize("hasRole('STAFF')")
+    // @PreAuthorize("hasRole('STAFF')")
     @Transactional
     public ResponseEntity<?> approveRequest(@PathVariable Long requestId) {
         SurveyRequest request = surveyRequestRepository.findById(requestId)
@@ -79,7 +79,7 @@ public class StaffSurveyController {
     }
 
     @PostMapping("/request/{requestId}/reject")
-    @PreAuthorize("hasRole('STAFF')")
+    //@PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<?> rejectRequest(@PathVariable Long requestId,
                                            @RequestParam(required = false) String rejectionReason) {
         SurveyRequest request = surveyRequestRepository.findById(requestId)
